@@ -1,0 +1,95 @@
+Antimony;10;30
+Arsenic;20;50
+Beryllium;2;10
+Cadmium;2;15
+Cobalt;20;250
+Chromium total;150;800
+Chromium VI;2;15
+Mercury;1;5
+Nickel;120;500
+Lead;100;1000
+Copper;120;600
+Selenium;3;15
+Tin;1;350
+Thallium;1;10
+Vanadium;90;250
+Zinc;150;1500
+Cyanide;1;100
+Fluorine;100;2000
+Benzene;0.1;2
+Ethylbenzene;0.5;50
+Styrene;0.5;50
+Toluene;0.5;50
+Xylene;0.5;50
+Benz(a)anthracene;0.5;10
+Benzo(a)pyrene;0.1;10
+Benzo(b)fluoranthene;0.5;10
+Benzo(k)fluoranthene;0.5;10
+Benzo(g,h,i)perylene;0.1;10
+Chrysene;5;50
+Dibenzo(a,e)pyrene;0.1;10
+Dibenzo(a,l)pyrene;0.1;10
+Dibenzo(a,i)pyrene;0.1;10
+Dibenzo(a,h)pyrene.;0.1;10
+Dibenzo(a,h)anthracene;0.1;10
+Ideno(1,2,3-c,d)pyrene;0.1;5
+Pyrene;5;50
+PAHs (from 25 to 34);10;100
+Chloromethane;0.1;5
+Dichloromethane;0.1;5
+Trichlorometane;0.1;5
+Vinyl chloride;0.01;0.1
+1,2-Dichloroethane;0.2;5
+1,1-Dichloroethylene;0.1;1
+Trichloroethylene (TCE);1;10
+Tetrachloroethylene (Perchloroethylene) (PCE);0.5;20
+1,1-Dichloroethane;0.5;30
+1,2-Dichloroethylene;0.3;15
+1,1,1-Trichloroethane;0.5;50
+1,2-Dichloropropane;0.3;5
+1,1,2-Trichloroethane;0.5;15
+1,2,3-Trichloropropane;1;10
+1,1,2,2-Tetrachloroethane;0.5;10
+Tribromomethane (bromoform);0.5;10
+1,2-Dibromoethane;0.01;0.1
+Dibromochloromethane;0.5;10
+Bromodichloromethane;0.5;10
+Nitrobenzene;0.5;30
+1,2-Dinitrobenzene;0.1;25
+1,3-Dinitrobenzene;0.1;25
+Chloronitrobenzene;0.1;10
+Monochlorobenzene;0.5;50
+1,2-dichlorobenzene;1;50
+1,4 – dichlorobenzene;0.1;10
+1,2,4 -trichlorobenzene;1;50
+1,2,4,5-tetrachloro-benzene;1;25
+Pentachlorobenzene;0.1;50
+Esachlorobenzene;0.05;5
+Methylphenol(o-, m-, p-);0.1;25
+phenol;1;60
+2-chlorophenol;0.5;25
+2,4-dichlorophenol;0.5;50
+2,4,6 – trichlorophenol;0.01;5
+Pentachlorophenol;0.01;5
+Aniline;0.05;5
+o-Anisidine;0.1;10
+m,p-Anisidine;0.1;10
+Diphenilamine;0.1;10
+p-Toluidine;0.1;5
+Aromatics Ammine (from 73 to 77);0.5;25
+Alaclor;0.01;1
+Aldrin;0.01;0.1
+Atrazine;0.01;1
+α-esachloroesane;0.01;0.1
+β-esachloroesane;0.01;0.5
+γ-esachloroesane (Lindano);0.01;0.5
+Clordano;0.01;0.1
+DDD, DDT, DDE;0.01;0.1
+Dieldrin;0.01;0.1
+Endrin;0.01;2
+PCDD, PCDF;1E-05;0.1
+PCB;0.06;5
+fuels <=C12;10;250
+fuels >C12;50;750
+Asbestos;1000;1000
+Esteri dell’acido ftalico (ognuno);10;60

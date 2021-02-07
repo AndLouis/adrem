@@ -271,3 +271,11 @@ class ADREMToolDialog(QDialog, FORM_CLASS):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
             pass
+
+    def close(self):
+        self.__init__()
+        
+        
+
+
+    

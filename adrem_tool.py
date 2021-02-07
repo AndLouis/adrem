@@ -43,7 +43,9 @@ from qgis.core import (
     QgsField,
     QgsPointXY,
     QgsWkbTypes,
-    QgsFillSymbol)
+    QgsFillSymbol,
+    QgsCategorizedSymbolRenderer,
+    QgsRendererCategory)
 import os, sys
 from qgis.utils import iface
 
@@ -341,7 +343,7 @@ class ADREMTool:
             sha_res_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_res, 'sha_on_res', 'ogr')
             if not sha_res_splited.isValid():
                 #print("res is valid")
-                msg = 'Loading Layer from : {} failed. Please this error might happen if you provide a residential but it is empty.'.format(path)
+                msg = 'Processing Layer from : {} failed. This error might happen if you provide a Residential use but it is empty.'.format(path)
                 iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                 raise Exception(msg)
             sha_res_splited.setExtent(self.main_extent)
@@ -352,7 +354,7 @@ class ADREMTool:
             sha_ind_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_ind, 'sha_on_ind', 'ogr')
             if not sha_res_splited.isValid():
                 #print("ind valid")
-                msg = 'Loading Layer from : {} failed'.format(path)
+                msg = 'Processing Layer from : {} failed. This error might happen if you provide a Industrial use but it is empty.'.format(path)
                 iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                 raise Exception(msg)
             sha_ind_splited.setExtent(self.main_extent)
@@ -391,7 +393,7 @@ class ADREMTool:
                 
                 sha_ind_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_ind, 'sha_on_ind', 'ogr')
                 if not sha_ind_splited.isValid():
-                    msg = 'Loading Layer from : {} failed'.format(path)
+                    msg = 'Processing Layer from : {} failed. This error might happen if you provide a Industrial use but it is empty.'.format(path)
                     iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                     raise Exception(msg)
                 sha_ind_splited.setExtent(self.main_extent)
@@ -430,7 +432,7 @@ class ADREMTool:
                 
                 sha_res_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_res, 'sha_on_res', 'ogr')
                 if not sha_res_splited.isValid():
-                    msg = 'Loading Layer from : {} failed'.format(path)
+                    msg = 'Processing Layer from : {} failed. This error might happen if you provide a Residential use but it is empty.'.format(path)
                     iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                     raise Exception(msg)
                 sha_res_splited.setExtent(self.main_extent)
@@ -438,7 +440,9 @@ class ADREMTool:
                 
         #QgsProject.instance().addMapLayer(clone_layer)
 
-        # Voronoi
+        ################################
+        ########### Voronoi ############
+        ################################
         if self.sha_res_splited:
             ###### point show ######
             QgsProject.instance().addMapLayer(self.sha_res_splited)
@@ -461,7 +465,7 @@ class ADREMTool:
     
             sha_vor_res_cliped = QgsVectorLayer(res_1['OUTPUT'],'sha_vor_on_res_cliped_by_bound', 'ogr')
             if not sha_vor_res_cliped.isValid():
-                msg = 'Processing Layer from : {} failed'.format(path)
+                msg = 'Processing Voronoi Layer from : {} failed'.format(path)
                 iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                 raise Exception(msg)
             param_ = {
@@ -474,7 +478,7 @@ class ADREMTool:
     
             sha_vor_res_cliped_ = QgsVectorLayer(res_1['OUTPUT'],'sha_vor_on_res_cliped', 'ogr')
             if not sha_vor_res_cliped_.isValid():
-                msg = 'Processing Layer from : {} failed'.format(path)
+                msg = 'Processing residential clipped Voronoi Layer on from : {} failed'.format(path)
                 iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                 raise Exception(msg)
             
@@ -487,18 +491,26 @@ class ADREMTool:
                     list(map(lambda x : QgsField('{}_cont'.format(x), QVariant.Int),
                     list(self.shallow_lim_res.keys())))
                 ))
+                
+                assert(sha_vor_res_cliped_.dataProvider().addAttributes(
+                    [QgsField('isContaminated', QVariant.Int)]
+                ))
+
                 with edit(sha_vor_res_cliped_):
                     for f in sha_vor_res_cliped_.getFeatures():
+                        f['isContaminated'] = 0
                         for ke in self.shallow_lim_res:
                             if float(f[ke]) > self.shallow_lim_res[ke]:
                                 f['{}_cont'.format(ke)] = 1
+                                f['isContaminated'] = 1
                             else:
                                 f['{}_cont'.format(ke)] = 0
                             sha_vor_res_cliped_.updateFeature(f)
 
             self.sha_vor_res_cliped = sha_vor_res_cliped_
-            set_fill_color(self.sha_vor_res_cliped)
-            QgsProject.instance().addMapLayer(self.sha_vor_res_cliped)
+            # set_fill_color(self.sha_vor_res_cliped)
+            # reCatLayer(self.sha_vor_res_cliped)
+            # QgsProject.instance().addMapLayer(self.sha_vor_res_cliped)
             ############################################################
         if self.sha_ind_splited:
 
@@ -523,7 +535,7 @@ class ADREMTool:
     
             sha_vor_ind_cliped = QgsVectorLayer(res_1['OUTPUT'],'sha_vor_on_ind_cliped_by_bound', 'ogr')
             if not sha_vor_ind_cliped.isValid():
-                msg = 'Processing Layer from : {} failed'.format(path)
+                msg = 'Processing Voronoi Layer from : {} failed'.format(path)
                 iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                 raise Exception(msg)
             # debug 
@@ -539,7 +551,7 @@ class ADREMTool:
     
             sha_vor_ind_cliped_ = QgsVectorLayer(res_1['OUTPUT'],'sha_vor_on_ind_cliped', 'ogr')
             if not sha_vor_ind_cliped_.isValid():
-                msg = 'Processing Layer from : {} failed'.format(path)
+                msg = 'Processing Industrial clipped Voronoi Layer from : {} failed'.format(path)
                 iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                 raise Exception(msg)
 
@@ -550,17 +562,25 @@ class ADREMTool:
                     list(map(lambda x : QgsField('{}_cont'.format(x), QVariant.Int),
                     list(self.shallow_lim_ind.keys())))
                 ))
+
+                assert(sha_vor_ind_cliped_.dataProvider().addAttributes(
+                    [QgsField('isContaminated', QVariant.Int)]
+                ))
+
                 with edit(sha_vor_ind_cliped_):
                     for f in sha_vor_ind_cliped_.getFeatures():
+                        f['isContaminated'] = 0
                         for ke in self.shallow_lim_ind:
                             if float(f[ke]) > self.shallow_lim_ind[ke]:
                                 f['{}_cont'.format(ke)] = 1
+                                f['isContaminated'] = 1
                             else:
                                 f['{}_cont'.format(ke)] = 0
                             sha_vor_ind_cliped_.updateFeature(f)
             self.sha_vor_ind_cliped = sha_vor_ind_cliped_
-            set_fill_color(self.sha_vor_ind_cliped)
-            QgsProject.instance().addMapLayer(self.sha_vor_ind_cliped)
+            # set_fill_color(self.sha_vor_ind_cliped)
+            #reCatLayer(self.sha_vor_ind_cliped)
+            #QgsProject.instance().addMapLayer(self.sha_vor_ind_cliped)
             ###########################################################
         _log_msg = "Success {} layer loader.".format(self.dlg.filename_shallow_csv)
         iface.messageBar().pushMessage("ADREM INFO: ", 
@@ -616,16 +636,16 @@ class ADREMTool:
 
             deep_res_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_res, 'deep_on_res', 'ogr')
             if not deep_res_splited.isValid():
-                msg = 'Loading Layer from : {} failed'.format(path)
+                msg = 'Processing Layer from : {} failed. This error might happen if you provide a Residential use but it is empty.'.format(path)
                 iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                 raise Exception(msg)
             deep_res_splited.setExtent(self.main_extent)
             self.deep_res_splited = deep_res_splited
 
             deep_ind_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_ind, 'deep_on_ind', 'ogr')
-            if not deep_res_splited.isValid():
+            if not deep_ind_splited.isValid():
                 #print("ind valid")
-                msg = 'Loading Layer from : {} failed'.format(path)
+                msg = 'Processing Layer from : {} failed. This error might happen if you provide a Industrial use but it is empty.'.format(path)
                 iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                 raise Exception(msg)
             deep_ind_splited.setExtent(self.main_extent)
@@ -663,7 +683,7 @@ class ADREMTool:
                 
                 deep_ind_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_ind, 'deep_on_ind', 'ogr')
                 if not deep_ind_splited.isValid():
-                    msg = 'Loading Layer from : {} failed'.format(path)
+                    msg = 'Processing Layer from : {} failed. This error might happen if you provide a Industrial use but it is empty.'.format(path)
                     iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                     raise Exception(msg)
                 deep_ind_splited.setExtent(self.main_extent)
@@ -700,14 +720,15 @@ class ADREMTool:
                 
                 deep_res_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_res, 'deep_on_res', 'ogr')
                 if not deep_res_splited.isValid():
-                    msg = 'Loading Layer from : {} failed'.format(path)
+                    msg = 'Processing Layer from : {} failed. This error might happen if you provide a Residential use but it is empty.'.format(path)
                     iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                     raise Exception(msg)
                 deep_res_splited.setExtent(self.main_extent)
                 self.deep_res_splited = deep_res_splited
         #QgsProject.instance().addMapLayer(clone_layer)
-
-        # Voronoi
+        #################
+        #### Voronoi ####
+        #################
         if self.deep_res_splited:
 
             ######### points show debug #########
@@ -731,7 +752,7 @@ class ADREMTool:
     
             deep_vor_res_cliped = QgsVectorLayer(res_1['OUTPUT'],'deep_vor_on_res_cliped_by_bound', 'ogr')
             if not deep_vor_res_cliped.isValid():
-                msg = 'Processing Layer from : {} failed'.format(path)
+                msg = 'Processing Voronoi Layer from : {} failed'.format(path)
                 iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                 raise Exception(msg)
             param_ = {
@@ -744,7 +765,7 @@ class ADREMTool:
     
             deep_vor_res_cliped_ = QgsVectorLayer(res_1['OUTPUT'],'deep_vor_on_res_cliped', 'ogr')
             if not deep_vor_res_cliped_.isValid():
-                msg = 'Processing Layer from : {} failed'.format(path)
+                msg = 'Processing Residential voronoi clipped Layer from : {} failed'.format(path)
                 iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                 raise Exception(msg)
             
@@ -756,17 +777,24 @@ class ADREMTool:
                     list(map(lambda x : QgsField('{}_cont'.format(x), QVariant.Int),
                     list(self.deep_lim_res.keys())))
                 ))
+
+                assert(deep_vor_res_cliped_.dataProvider().addAttributes(
+                    [QgsField('isContaminated',QVariant.Int)]
+                ))
+
                 with edit(deep_vor_res_cliped_):
                     for f in deep_vor_res_cliped_.getFeatures():
+                        f['isContaminated'] = 0
                         for ke in self.deep_lim_res:
                             if float(f[ke]) > self.deep_lim_res[ke]:
                                 f['{}_cont'.format(ke)] = 1
+                                f['isContaminated'] = 1
                             else:
                                 f['{}_cont'.format(ke)] = 0
                             deep_vor_res_cliped_.updateFeature(f)
             self.deep_vor_res_cliped = deep_vor_res_cliped_
-            set_fill_color(self.deep_vor_res_cliped)
-            QgsProject.instance().addMapLayer(self.deep_vor_res_cliped)
+            #set_fill_color(self.deep_vor_res_cliped)
+            #QgsProject.instance().addMapLayer(self.deep_vor_res_cliped)
             ###########################################################
         
         if self.deep_ind_splited:
@@ -792,7 +820,7 @@ class ADREMTool:
     
             deep_vor_ind_cliped = QgsVectorLayer(res_1['OUTPUT'],'deep_vor_on_ind_cliped_by_bound', 'ogr')
             if not deep_vor_ind_cliped.isValid():
-                msg = 'Processing Layer from : {} failed'.format(path)
+                msg = 'Processing Voronoi Layer from : {} failed'.format(path)
                 iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                 raise Exception(msg)
             # debug 
@@ -808,7 +836,7 @@ class ADREMTool:
     
             deep_vor_ind_cliped_ = QgsVectorLayer(res_1['OUTPUT'],'deep_vor_on_ind_cliped', 'ogr')
             if not deep_vor_ind_cliped_.isValid():
-                msg = 'Processing Layer from : {} failed'.format(path)
+                msg = 'Processing industrial voronoi clipped Layer from : {} failed'.format(path)
                 iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                 raise Exception(msg)
             #set_fill_color(sha_vor_ind_cliped)
@@ -820,17 +848,24 @@ class ADREMTool:
                     list(map(lambda x : QgsField('{}_cont'.format(x), QVariant.Int),
                     list(self.deep_lim_ind.keys())))
                 ))
+
+                assert(deep_vor_ind_cliped_.dataProvider().addAttributes(
+                    [QgsField('isContaminated', QVariant.Int)]
+                ))
+
                 with edit(deep_vor_ind_cliped_):
                     for f in deep_vor_ind_cliped_.getFeatures():
+                        f['isContaminated'] = 0
                         for ke in self.deep_lim_ind:
                             if float(f[ke]) > self.deep_lim_ind[ke]:
                                 f['{}_cont'.format(ke)] = 1
+                                f['isContaminated'] = 1
                             else:
                                 f['{}_cont'.format(ke)] = 0
                             deep_vor_ind_cliped_.updateFeature(f)
             self.deep_vor_ind_cliped = deep_vor_ind_cliped_
-            set_fill_color(self.deep_vor_ind_cliped)
-            QgsProject.instance().addMapLayer(self.deep_vor_ind_cliped)
+            # set_fill_color(self.deep_vor_ind_cliped)
+            # QgsProject.instance().addMapLayer(self.deep_vor_ind_cliped)
             ###########################################################
 
         _log_msg = "Success {} layer loader.".format(self.dlg.filename_shallow_csv)
@@ -884,7 +919,7 @@ class ADREMTool:
     
         aquifer_vor_cliped_ = QgsVectorLayer(res_1['OUTPUT'],'aquifer_vor_cliped_by_bound', 'ogr')
         if not aquifer_vor_cliped_.isValid():
-            msg = 'Processing Layer from : {} failed'.format(path)
+            msg = 'Processing Voronoi Layer from : {} failed'.format(path)
             iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
             raise Exception(msg)
             
@@ -895,17 +930,24 @@ class ADREMTool:
                 list(map(lambda x : QgsField('{}_cont'.format(x), QVariant.Int),
                 list(self.aquifer_lim.keys())))
                 ))
+
+            assert(aquifer_vor_cliped_.dataProvider().addAttributes(
+                [QgsField('isContaminated',QVariant.Int)]
+            ))
+
             with edit(aquifer_vor_cliped_):
                 for f in aquifer_vor_cliped_.getFeatures():
+                    f['isContaminated'] = 0
                     for ke in self.aquifer_lim:
                         if float(f[ke]) > self.aquifer_lim[ke]:
                             f['{}_cont'.format(ke)] = 1
+                            f['isContaminated'] = 1
                         else:
                             f['{}_cont'.format(ke)] = 0
                         aquifer_vor_cliped_.updateFeature(f)
         self.aquifer_vor_cliped = aquifer_vor_cliped_
-        set_fill_color(self.aquifer_vor_cliped)
-        QgsProject.instance().addMapLayer(self.aquifer_vor_cliped)
+        # set_fill_color(self.aquifer_vor_cliped)
+        # QgsProject.instance().addMapLayer(self.aquifer_vor_cliped)
         ###########################################################
         #QgsProject.instance().addMapLayer(self.aquifer_vor_cliped)
 
@@ -960,7 +1002,116 @@ class ADREMTool:
                 iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
                 raise Exception(msg)
         
-    
+    def AnalisisAndOutput(self):
+        try:
+            if self.sha_vor_ind_cliped:
+                with edit(self.sha_vor_ind_cliped):
+                    for f in self.sha_vor_ind_cliped.getFeatures():
+                        if f['isContaminated'] == 0:
+                            f['isContaminated'] = 1
+                            buff = f.geometry().buffer(10,2)
+                            for g in self.sha_vor_ind_cliped.getFeatures():
+                                if f['fid'] != g['fid']:
+                                    if g.geometry().intersects(buff):
+                                        #iface.messageBar().pushMessage("Debug: ","we got inside",level=Qgis.Info)
+                                        if g['isContaminated'] == 0:
+                                            f['isContaminated'] = 0
+                                            break
+                            self.sha_vor_ind_cliped.updateFeature(f)
+                                            
+            
+                reCatLayer(self.sha_vor_ind_cliped)
+                QgsProject.instance().addMapLayer(self.sha_vor_ind_cliped)
+        except AttributeError:
+            pass
+        
+        try:
+            if self.sha_vor_res_cliped:
+                with edit(self.sha_vor_res_cliped):
+                    for f in self.sha_vor_res_cliped.getFeatures():
+                        if f['isContaminated'] == 0:
+                            f['isContaminated'] = 1
+                            buff = f.geometry().buffer(10,2)
+                            for g in self.sha_vor_res_cliped.getFeatures():
+                                if f['fid'] != g['fid']:
+                                    if g.geometry().intersects(buff):
+                                        #iface.messageBar().pushMessage("Debug: ","we got inside",level=Qgis.Info)
+                                        if g['isContaminated'] == 0:
+                                            f['isContaminated'] = 0
+                                            break
+                            self.sha_vor_res_cliped.updateFeature(f)
+                                            
+            
+                reCatLayer(self.sha_vor_res_cliped)
+                QgsProject.instance().addMapLayer(self.sha_vor_res_cliped)
+        except AttributeError:
+            pass
+
+        try:
+            if self.deep_vor_res_cliped:
+                with edit(self.deep_vor_res_cliped):
+                    for f in self.deep_vor_res_cliped.getFeatures():
+                        if f['isContaminated'] == 0:
+                            f['isContaminated'] = 1
+                            buff = f.geometry().buffer(10,2)
+                            for g in self.deep_vor_res_cliped.getFeatures():
+                                if f['fid'] != g['fid']:
+                                    if g.geometry().intersects(buff):
+                                        #iface.messageBar().pushMessage("Debug: ","we got inside",level=Qgis.Info)
+                                        if g['isContaminated'] == 0:
+                                            f['isContaminated'] = 0
+                                            break
+                            self.deep_vor_res_cliped.updateFeature(f)
+                                            
+            
+                reCatLayer(self.deep_vor_res_cliped)
+                QgsProject.instance().addMapLayer(self.deep_vor_res_cliped)
+        except AttributeError:
+            pass
+        
+        try:
+            if self.deep_vor_ind_cliped:
+                with edit(self.deep_vor_ind_cliped):
+                    for f in self.deep_vor_ind_cliped.getFeatures():
+                        if f['isContaminated'] == 0:
+                            f['isContaminated'] = 1
+                            buff = f.geometry().buffer(10,2)
+                            for g in self.deep_vor_ind_cliped.getFeatures():
+                                if f['fid'] != g['fid']:
+                                    if g.geometry().intersects(buff):
+                                        #iface.messageBar().pushMessage("Debug: ","we got inside",level=Qgis.Info)
+                                        if g['isContaminated'] == 0:
+                                            f['isContaminated'] = 0
+                                            break
+                            self.deep_vor_ind_cliped.updateFeature(f)
+                                            
+            
+                reCatLayer(self.deep_vor_ind_cliped)
+                QgsProject.instance().addMapLayer(self.deep_vor_ind_cliped)
+        except AttributeError:
+            pass
+
+        try:
+            if self.aquifer_vor_cliped:
+                with edit(self.aquifer_vor_cliped):
+                    for f in self.aquifer_vor_cliped.getFeatures():
+                        if f['isContaminated'] == 0:
+                            f['isContaminated'] = 1
+                            buff = f.geometry().buffer(10,2)
+                            for g in self.aquifer_vor_cliped.getFeatures():
+                                if f['fid'] != g['fid']:
+                                    if g.geometry().intersects(buff):
+                                        #iface.messageBar().pushMessage("Debug: ","we got inside",level=Qgis.Info)
+                                        if g['isContaminated'] == 0:
+                                            f['isContaminated'] = 0
+                                            break
+                            self.aquifer_vor_cliped.updateFeature(f)
+                                            
+            
+                reCatLayer(self.aquifer_vor_cliped)
+                QgsProject.instance().addMapLayer(self.aquifer_vor_cliped)
+        except AttributeError:
+            pass
 
 
 
@@ -1011,7 +1162,9 @@ class ADREMTool:
             if self.dlg.filename_aquifer_csv:
                 self._process_csv_aquifer()
 
-            self.dlg.done(result)
+            self.AnalisisAndOutput()
+
+            self.dlg.close()
 
             
 
@@ -1023,3 +1176,17 @@ def set_fill_color(layer):
     a[-1] = '170'
     _props['color'] = ','.join(a)
     layer.renderer().setSymbol(QgsFillSymbol.createSimple(_props))
+
+def reCatLayer(layer):
+    categories = QgsCategorizedSymbolRenderer()
+    contaminated_sym = QgsFillSymbol.createSimple({'color':'255,0,0,120'})
+    clean_sym = QgsFillSymbol.createSimple({'color':'0,255,0,120'})
+    cat_cont = QgsRendererCategory('1',contaminated_sym,'contaminated')
+    cat_clean = QgsRendererCategory('0',clean_sym, 'clean')
+
+    categories.addCategory(cat_cont)
+    categories.addCategory(cat_clean)
+
+    categories.setClassAttribute('isContaminated')
+
+    layer.setRenderer(categories)

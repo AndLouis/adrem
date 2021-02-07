@@ -12,8 +12,8 @@ email=louis.andrianaivo@polito.it
 
 about=No description yet
 
-tracker=http://bugs
-repository=http://repo
+tracker=https://github.com/AndLouis/adrem/issues
+repository=https://github.com/AndLouis/adrem.git
 # End of mandatory metadata
 
 # Recommended items:
@@ -25,7 +25,7 @@ hasProcessingProvider=no
 # Tags are comma separated with spaces allowed
 tags=python
 
-homepage=http://homepage
+homepage=https://github.com/AndLouis/adremtools/help/build/html/index.html
 category=Plugins
 icon=icon.png
 # experimental flag

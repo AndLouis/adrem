@@ -34,6 +34,7 @@ import os.path
 from pathlib import Path
 import os
 import sys
+import math
 
 from qgis.core import (
     QgsVectorLayer, 
@@ -1008,15 +1009,25 @@ class ADREMTool:
                 with edit(self.sha_vor_ind_cliped):
                     for f in self.sha_vor_ind_cliped.getFeatures():
                         if f['isContaminated'] == 0:
-                            f['isContaminated'] = 1
+                            
                             buff = f.geometry().buffer(10,2)
+                            clean_pol = 0
+                            polluted = 0
                             for g in self.sha_vor_ind_cliped.getFeatures():
                                 if f['fid'] != g['fid']:
                                     if g.geometry().intersects(buff):
                                         #iface.messageBar().pushMessage("Debug: ","we got inside",level=Qgis.Info)
                                         if g['isContaminated'] == 0:
-                                            f['isContaminated'] = 0
-                                            break
+                                            clean_pol = clean_pol + 1
+                                        else:
+                                            polluted = polluted + 1
+
+                            half = math.floor((polluted + clean_pol)/2)
+                            if (polluted > half):
+                                f['isContaminated'] = 1
+                            else:
+                                f['isContaminated'] = 0
+
                             self.sha_vor_ind_cliped.updateFeature(f)
                                             
             
@@ -1030,15 +1041,25 @@ class ADREMTool:
                 with edit(self.sha_vor_res_cliped):
                     for f in self.sha_vor_res_cliped.getFeatures():
                         if f['isContaminated'] == 0:
-                            f['isContaminated'] = 1
+    
                             buff = f.geometry().buffer(10,2)
+                            clean_pol = 0
+                            polluted = 0
                             for g in self.sha_vor_res_cliped.getFeatures():
                                 if f['fid'] != g['fid']:
                                     if g.geometry().intersects(buff):
                                         #iface.messageBar().pushMessage("Debug: ","we got inside",level=Qgis.Info)
                                         if g['isContaminated'] == 0:
-                                            f['isContaminated'] = 0
-                                            break
+                                            clean_pol = clean_pol + 1
+                                        else:
+                                            polluted = polluted + 1
+
+                            half = math.floor((polluted + clean_pol)/2)
+                            if (polluted > half):
+                                f['isContaminated'] = 1
+                            else:
+                                f['isContaminated'] = 0
+
                             self.sha_vor_res_cliped.updateFeature(f)
                                             
             
@@ -1052,15 +1073,25 @@ class ADREMTool:
                 with edit(self.deep_vor_res_cliped):
                     for f in self.deep_vor_res_cliped.getFeatures():
                         if f['isContaminated'] == 0:
-                            f['isContaminated'] = 1
+                        
                             buff = f.geometry().buffer(10,2)
+                            clean_pol = 0
+                            polluted = 0
                             for g in self.deep_vor_res_cliped.getFeatures():
                                 if f['fid'] != g['fid']:
                                     if g.geometry().intersects(buff):
                                         #iface.messageBar().pushMessage("Debug: ","we got inside",level=Qgis.Info)
                                         if g['isContaminated'] == 0:
-                                            f['isContaminated'] = 0
-                                            break
+                                            clean_pol = clean_pol + 1
+                                        else:
+                                            polluted = polluted + 1
+
+                            half = math.floor((polluted + clean_pol)/2)
+                            if (polluted > half):
+                                f['isContaminated'] = 1
+                            else:
+                                f['isContaminated'] = 0
+
                             self.deep_vor_res_cliped.updateFeature(f)
                                             
             
@@ -1074,15 +1105,25 @@ class ADREMTool:
                 with edit(self.deep_vor_ind_cliped):
                     for f in self.deep_vor_ind_cliped.getFeatures():
                         if f['isContaminated'] == 0:
-                            f['isContaminated'] = 1
+                            
                             buff = f.geometry().buffer(10,2)
+                            clean_pol = 0
+                            polluted = 0
                             for g in self.deep_vor_ind_cliped.getFeatures():
                                 if f['fid'] != g['fid']:
                                     if g.geometry().intersects(buff):
                                         #iface.messageBar().pushMessage("Debug: ","we got inside",level=Qgis.Info)
                                         if g['isContaminated'] == 0:
-                                            f['isContaminated'] = 0
-                                            break
+                                            clean_pol = clean_pol + 1
+                                        else:
+                                            polluted = polluted + 1
+
+                            half = math.floor((polluted + clean_pol)/2)
+                            if (polluted > half):
+                                f['isContaminated'] = 1
+                            else:
+                                f['isContaminated'] = 0
+
                             self.deep_vor_ind_cliped.updateFeature(f)
                                             
             
@@ -1096,15 +1137,25 @@ class ADREMTool:
                 with edit(self.aquifer_vor_cliped):
                     for f in self.aquifer_vor_cliped.getFeatures():
                         if f['isContaminated'] == 0:
-                            f['isContaminated'] = 1
+                            
                             buff = f.geometry().buffer(10,2)
+                            clean_pol = 0
+                            polluted = 0
                             for g in self.aquifer_vor_cliped.getFeatures():
                                 if f['fid'] != g['fid']:
                                     if g.geometry().intersects(buff):
                                         #iface.messageBar().pushMessage("Debug: ","we got inside",level=Qgis.Info)
                                         if g['isContaminated'] == 0:
-                                            f['isContaminated'] = 0
-                                            break
+                                            clean_pol = clean_pol + 1
+                                        else:
+                                            polluted = polluted + 1
+
+                            half = math.floor((polluted + clean_pol)/2)
+                            if (polluted > half):
+                                f['isContaminated'] = 1
+                            else:
+                                f['isContaminated'] = 0
+
                             self.aquifer_vor_cliped.updateFeature(f)
                                             
             

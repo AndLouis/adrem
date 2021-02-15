@@ -105,7 +105,7 @@ class ADREMToolDialog(QDialog, FORM_CLASS):
     def select_directory(self):
         path = QFileDialog.getExistingDirectory(
             self,
-            'Select the Directory fro your Plugin',
+            'Select the Directory',
             ''
         )
         self.outputDir.setText(path)

@@ -42,11 +42,15 @@ from qgis.core import (
     Qgis, 
     QgsVectorDataProvider, 
     QgsField,
+    QgsFields,
+    QgsFeature,
     QgsPointXY,
     QgsWkbTypes,
     QgsFillSymbol,
     QgsCategorizedSymbolRenderer,
-    QgsRendererCategory)
+    QgsRendererCategory,
+    QgsVectorFileWriter,
+    QgsMessageLog)
 import os, sys
 from qgis.utils import iface
 
@@ -195,12 +199,12 @@ class ADREMTool:
         main_view_layer = QgsVectorLayer(self.dlg.filename_mainView, "main_view", 'ogr')
         if not main_view_layer.isValid():
             msg = 'Loading Layer from : {} failed'.format(self.dlg.filename_mainView)
-            iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+            iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
             raise Exception(msg)
         self.m_v_layer = main_view_layer
         self.main_extent = main_view_layer.extent()
         _log_msg = "Success {} layer Loaded.".format(self.dlg.filename_mainView)
-        iface.messageBar().pushMessage("ADREM INFO: ", 
+        iface.messageBar().pushMessage("ADREM INFO ", 
             _log_msg,
             level=Qgis.Info)
         
@@ -221,7 +225,7 @@ class ADREMTool:
         bound_shp_layer = QgsVectorLayer(self.dlg.filename_boundary_shp, 'boudary', 'ogr')
         if not bound_shp_layer.isValid():
             msg = 'Loading Layer from : {} failed'.format(self.dlg.filename_boudary_shp)
-            iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+            iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
             raise Exception(msg)
         #self.bound_shp_layer = bound_shp_layer
         # check now if one need to convert
@@ -234,7 +238,7 @@ class ADREMTool:
             else:
                 if each.geometry().wkbType() != QgsWkbTypes.MultiLineString:
                     msg = 'The type of boundary is unknown, try MultilineString or polygon'
-                    iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                    iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                     raise Exception(msg)
                 need_to_convert = True
         if need_to_convert:
@@ -249,7 +253,7 @@ class ADREMTool:
             self.bound_shp_layer = bound_shp_layer
         
         _log_msg = "Success {} layer loader.".format(self.dlg.filename_boundary_shp)
-        iface.messageBar().pushMessage("ADREM INFO: ", 
+        iface.messageBar().pushMessage("ADREM INFO ", 
                 _log_msg,
                 level=Qgis.Info)
 
@@ -261,13 +265,13 @@ class ADREMTool:
         ind_shp_layer = QgsVectorLayer(self.dlg.filename_industrialShape, 'industrial_area', 'ogr')
         if not ind_shp_layer.isValid():
             msg = 'Loading Layer from : {} failed'.format(self.dlg.filename_industrialShape)
-            iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+            iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
             raise Exception(msg)
         self.ind_shp_layer = ind_shp_layer
         self.ind_shp_layer.setExtent(self.main_extent)
         self.ind_features = list(self.ind_shp_layer.getFeatures())
         _log_msg = "Success {} layer loader.".format(self.dlg.filename_industrialShape)
-        iface.messageBar().pushMessage("ADREM INFO: ", 
+        iface.messageBar().pushMessage("ADREM INFO ", 
             _log_msg,
             level=Qgis.Info)
     def _show_industrial_layer(self):
@@ -278,13 +282,13 @@ class ADREMTool:
         res_shp_layer = QgsVectorLayer(self.dlg.filename_residentialShape, 'residential_area', 'ogr')
         if not res_shp_layer.isValid():
             msg = 'Loading Layer from : {} failed'.format(self.dlg.filename_residentialShape)
-            iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+            iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
             raise Exception(msg)
         self.res_shp_layer = res_shp_layer
         self.res_shp_layer.setExtent(self.main_extent)
         self.res_features = list(self.res_shp_layer.getFeatures())
         _log_msg = "Success {} layer loader.".format(self.dlg.filename_residentialShape)
-        iface.messageBar().pushMessage("ADREM INFO: ", 
+        iface.messageBar().pushMessage("ADREM INFO ", 
             _log_msg,
             level=Qgis.Info)
 
@@ -301,7 +305,7 @@ class ADREMTool:
         sha_layer = QgsVectorLayer(uri, 'sha_loc_layer', 'delimitedtext')
         if not sha_layer.isValid():
             msg = 'Loading Layer from : {2} failed'.format(path)
-            iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+            iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
             raise Exception(msg)
         
         sha_layer.selectAll()
@@ -344,8 +348,8 @@ class ADREMTool:
             sha_res_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_res, 'sha_on_res', 'ogr')
             if not sha_res_splited.isValid():
                 #print("res is valid")
-                msg = 'Processing Layer from : {} failed. This error might happen if you provide a Residential use but it is empty.'.format(path)
-                iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                msg = 'Processing Layer from : {} failed. This ERROR might happen if you provide a Residential use but it is empty.'.format(path)
+                iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                 raise Exception(msg)
             sha_res_splited.setExtent(self.main_extent)
             self.sha_res_splited = sha_res_splited
@@ -355,8 +359,8 @@ class ADREMTool:
             sha_ind_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_ind, 'sha_on_ind', 'ogr')
             if not sha_res_splited.isValid():
                 #print("ind valid")
-                msg = 'Processing Layer from : {} failed. This error might happen if you provide a Industrial use but it is empty.'.format(path)
-                iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                msg = 'Processing Layer from : {} failed. This ERROR might happen if you provide a Industrial use but it is empty.'.format(path)
+                iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                 raise Exception(msg)
             sha_ind_splited.setExtent(self.main_extent)
             self.sha_ind_splited = sha_ind_splited
@@ -394,8 +398,8 @@ class ADREMTool:
                 
                 sha_ind_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_ind, 'sha_on_ind', 'ogr')
                 if not sha_ind_splited.isValid():
-                    msg = 'Processing Layer from : {} failed. This error might happen if you provide a Industrial use but it is empty.'.format(path)
-                    iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                    msg = 'Processing Layer from : {} failed. This ERROR might happen if you provide a Industrial use but it is empty.'.format(path)
+                    iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                     raise Exception(msg)
                 sha_ind_splited.setExtent(self.main_extent)
                 self.sha_ind_splited = sha_ind_splited
@@ -433,8 +437,8 @@ class ADREMTool:
                 
                 sha_res_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_res, 'sha_on_res', 'ogr')
                 if not sha_res_splited.isValid():
-                    msg = 'Processing Layer from : {} failed. This error might happen if you provide a Residential use but it is empty.'.format(path)
-                    iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                    msg = 'Processing Layer from : {} failed. This ERROR might happen if you provide a Residential use but it is empty.'.format(path)
+                    iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                     raise Exception(msg)
                 sha_res_splited.setExtent(self.main_extent)
                 self.sha_res_splited = sha_res_splited
@@ -467,7 +471,7 @@ class ADREMTool:
             sha_vor_res_cliped = QgsVectorLayer(res_1['OUTPUT'],'sha_vor_on_res_cliped_by_bound', 'ogr')
             if not sha_vor_res_cliped.isValid():
                 msg = 'Processing Voronoi Layer from : {} failed'.format(path)
-                iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                 raise Exception(msg)
             param_ = {
                     'INPUT' : sha_vor_res_cliped, 
@@ -480,7 +484,7 @@ class ADREMTool:
             sha_vor_res_cliped_ = QgsVectorLayer(res_1['OUTPUT'],'sha_vor_on_res_cliped', 'ogr')
             if not sha_vor_res_cliped_.isValid():
                 msg = 'Processing residential clipped Voronoi Layer on from : {} failed'.format(path)
-                iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                 raise Exception(msg)
             
             
@@ -537,7 +541,7 @@ class ADREMTool:
             sha_vor_ind_cliped = QgsVectorLayer(res_1['OUTPUT'],'sha_vor_on_ind_cliped_by_bound', 'ogr')
             if not sha_vor_ind_cliped.isValid():
                 msg = 'Processing Voronoi Layer from : {} failed'.format(path)
-                iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                 raise Exception(msg)
             # debug 
             # QgsProject.instance().addMapLayer(sha_vor_ind_cliped)
@@ -553,7 +557,7 @@ class ADREMTool:
             sha_vor_ind_cliped_ = QgsVectorLayer(res_1['OUTPUT'],'sha_vor_on_ind_cliped', 'ogr')
             if not sha_vor_ind_cliped_.isValid():
                 msg = 'Processing Industrial clipped Voronoi Layer from : {} failed'.format(path)
-                iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                 raise Exception(msg)
 
             ###########################################################
@@ -584,7 +588,7 @@ class ADREMTool:
             #QgsProject.instance().addMapLayer(self.sha_vor_ind_cliped)
             ###########################################################
         _log_msg = "Success {} layer loader.".format(self.dlg.filename_shallow_csv)
-        iface.messageBar().pushMessage("ADREM INFO: ", 
+        iface.messageBar().pushMessage("ADREM INFO ", 
             _log_msg,
             level=Qgis.Info)
 
@@ -598,7 +602,7 @@ class ADREMTool:
         deep_layer = QgsVectorLayer(uri, 'deep_loc_layer', 'delimitedtext')
         if not deep_layer.isValid():
             msg = 'Loading Layer from : {} failed'.format(path)
-            iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+            iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
             raise Exception(msg)
         deep_layer.selectAll()
         clone_layer = processing.run("native:saveselectedfeatures",
@@ -637,8 +641,8 @@ class ADREMTool:
 
             deep_res_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_res, 'deep_on_res', 'ogr')
             if not deep_res_splited.isValid():
-                msg = 'Processing Layer from : {} failed. This error might happen if you provide a Residential use but it is empty.'.format(path)
-                iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                msg = 'Processing Layer from : {} failed. This ERROR might happen if you provide a Residential use but it is empty.'.format(path)
+                iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                 raise Exception(msg)
             deep_res_splited.setExtent(self.main_extent)
             self.deep_res_splited = deep_res_splited
@@ -646,8 +650,8 @@ class ADREMTool:
             deep_ind_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_ind, 'deep_on_ind', 'ogr')
             if not deep_ind_splited.isValid():
                 #print("ind valid")
-                msg = 'Processing Layer from : {} failed. This error might happen if you provide a Industrial use but it is empty.'.format(path)
-                iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                msg = 'Processing Layer from : {} failed. This ERROR might happen if you provide a Industrial use but it is empty.'.format(path)
+                iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                 raise Exception(msg)
             deep_ind_splited.setExtent(self.main_extent)
             self.deep_ind_splited = deep_ind_splited
@@ -684,8 +688,8 @@ class ADREMTool:
                 
                 deep_ind_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_ind, 'deep_on_ind', 'ogr')
                 if not deep_ind_splited.isValid():
-                    msg = 'Processing Layer from : {} failed. This error might happen if you provide a Industrial use but it is empty.'.format(path)
-                    iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                    msg = 'Processing Layer from : {} failed. This ERROR might happen if you provide a Industrial use but it is empty.'.format(path)
+                    iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                     raise Exception(msg)
                 deep_ind_splited.setExtent(self.main_extent)
                 self.deep_ind_splited = deep_ind_splited
@@ -721,8 +725,8 @@ class ADREMTool:
                 
                 deep_res_splited = QgsVectorLayer(res['OUTPUT'] + '/' + ext_res, 'deep_on_res', 'ogr')
                 if not deep_res_splited.isValid():
-                    msg = 'Processing Layer from : {} failed. This error might happen if you provide a Residential use but it is empty.'.format(path)
-                    iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                    msg = 'Processing Layer from : {} failed. This ERROR might happen if you provide a Residential use but it is empty.'.format(path)
+                    iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                     raise Exception(msg)
                 deep_res_splited.setExtent(self.main_extent)
                 self.deep_res_splited = deep_res_splited
@@ -754,7 +758,7 @@ class ADREMTool:
             deep_vor_res_cliped = QgsVectorLayer(res_1['OUTPUT'],'deep_vor_on_res_cliped_by_bound', 'ogr')
             if not deep_vor_res_cliped.isValid():
                 msg = 'Processing Voronoi Layer from : {} failed'.format(path)
-                iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                 raise Exception(msg)
             param_ = {
                     'INPUT' : deep_vor_res_cliped, 
@@ -767,7 +771,7 @@ class ADREMTool:
             deep_vor_res_cliped_ = QgsVectorLayer(res_1['OUTPUT'],'deep_vor_on_res_cliped', 'ogr')
             if not deep_vor_res_cliped_.isValid():
                 msg = 'Processing Residential voronoi clipped Layer from : {} failed'.format(path)
-                iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                 raise Exception(msg)
             
             
@@ -822,7 +826,7 @@ class ADREMTool:
             deep_vor_ind_cliped = QgsVectorLayer(res_1['OUTPUT'],'deep_vor_on_ind_cliped_by_bound', 'ogr')
             if not deep_vor_ind_cliped.isValid():
                 msg = 'Processing Voronoi Layer from : {} failed'.format(path)
-                iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                 raise Exception(msg)
             # debug 
             # QgsProject.instance().addMapLayer(sha_vor_ind_cliped)
@@ -838,7 +842,7 @@ class ADREMTool:
             deep_vor_ind_cliped_ = QgsVectorLayer(res_1['OUTPUT'],'deep_vor_on_ind_cliped', 'ogr')
             if not deep_vor_ind_cliped_.isValid():
                 msg = 'Processing industrial voronoi clipped Layer from : {} failed'.format(path)
-                iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                 raise Exception(msg)
             #set_fill_color(sha_vor_ind_cliped)
 
@@ -870,7 +874,7 @@ class ADREMTool:
             ###########################################################
 
         _log_msg = "Success {} layer loader.".format(self.dlg.filename_shallow_csv)
-        iface.messageBar().pushMessage("ADREM INFO: ", 
+        iface.messageBar().pushMessage("ADREM INFO ", 
                         _log_msg,
                         level=Qgis.Info)
 
@@ -884,7 +888,7 @@ class ADREMTool:
         aquifer_layer = QgsVectorLayer(uri, 'aquifer', 'delimitedtext')
         if not aquifer_layer.isValid():
             msg = 'Loading Layer from : {} failed'.format(path)
-            iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+            iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
             raise Exception(msg)
         
         aquifer_layer.selectAll()
@@ -921,7 +925,7 @@ class ADREMTool:
         aquifer_vor_cliped_ = QgsVectorLayer(res_1['OUTPUT'],'aquifer_vor_cliped_by_bound', 'ogr')
         if not aquifer_vor_cliped_.isValid():
             msg = 'Processing Voronoi Layer from : {} failed'.format(path)
-            iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+            iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
             raise Exception(msg)
             
         ###########################################################
@@ -955,7 +959,7 @@ class ADREMTool:
 
         
         _log_msg = "Success {} layer loader.".format(self.dlg.filename_aquifer_csv)
-        iface.messageBar().pushMessage("ADREM INFO: ", 
+        iface.messageBar().pushMessage("ADREM INFO ", 
             _log_msg,
             level=Qgis.Info)
 
@@ -976,7 +980,7 @@ class ADREMTool:
                     continue
             if not self.shallow_lim_ind or not self.shallow_lim_res:
                 msg = 'Please verify the field at : {}'.format(self.dlg.filename_shallow_csv)
-                iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                 raise Exception(msg)
         if self.dlg.filename_deep_csv:
             self.deep_lim_ind = {}
@@ -989,7 +993,7 @@ class ADREMTool:
                     continue
             if not self.deep_lim_ind or not self.deep_lim_res:
                 msg = 'Please verify the field at : {}'.format(self.dlg.filename_deep_csv)
-                iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                 raise Exception(msg)
         if self.dlg.filename_aquifer_csv:
             self.aquifer_lim = {}
@@ -1000,10 +1004,10 @@ class ADREMTool:
                     continue
             if not self.aquifer_lim:
                 msg = 'Please verify the field at : {}'.format(self.dlg.filename_aquifer_csv)
-                iface.messageBar().pushMessage("Error", msg, level=Qgis.Critical)
+                iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                 raise Exception(msg)
         
-    def AnalisisAndOutput(self):
+    def _analysis(self):
         try:
             if self.sha_vor_ind_cliped:
                 with edit(self.sha_vor_ind_cliped):
@@ -1164,7 +1168,512 @@ class ADREMTool:
         except AttributeError:
             pass
 
+    def _mergeNdOutput(self):
 
+        try:
+            if self.sha_vor_ind_cliped:
+                list_contaminats = []
+                for f in self.sha_vor_ind_cliped.getFeatures():
+                    if f['isContaminated'] == 1:
+                        for ke in self.shallow_lim_ind:
+                            if f['{}_cont'.format(ke)] == 1:
+                                list_contaminats.append(ke)
+                list_contaminats = list(set(list_contaminats))
+                
+                layer_modif = self.sha_vor_ind_cliped
+
+                if len(list_contaminats)!= 0:
+
+                    ###############################################################
+                    param_disolve = {
+                    'INPUT' : layer_modif,
+                    'FIELD' : ['isContaminated'],
+                    'OUTPUT' : 'TEMPORARY_OUTPUT'
+                    }
+            
+                    res = processing.run("native:dissolve", param_disolve)
+                    tmp_layer_0 = res['OUTPUT']
+                    #reCatLayer(tmp_layer)
+                    #QgsProject.instance().addMapLayer(tmp_layer)
+                    
+                    param_multipart = {
+                        'INPUT' : tmp_layer_0,
+                        'OUTPUT' : 'TEMPORARY_OUTPUT'
+                    }
+                    res_1 = processing.run('qgis:multiparttosingleparts',param_multipart)
+
+                    tmp_layer = res_1['OUTPUT']
+                    #QgsProject.instance().addMapLayer(tmp_layer)
+
+
+                    ###############################################################
+
+                    out_file = os.path.join(self.dlg.outputDir.text(), 'shallow_polluted_on_ind.shp')
+                    
+                    crs = QgsProject.instance().crs()
+                    # iface.messageBar().pushMessage("Debug: ","{}".format(crs),level=Qgis.Info)
+                    transform_context = QgsProject.instance().transformContext()
+                    # iface.messageBar().pushMessage("Debug: ","{}".format(transform_context),level=Qgis.Info)
+                    save_options = QgsVectorFileWriter.SaveVectorOptions()
+                    save_options.driverName = "ESRI Shapefile"
+                    save_options.fileEncoding = "UTF-8"
+
+                    layerFields = QgsFields()
+                    layerFields.append(QgsField('source',QVariant.Int))
+                    #iface.messageBar().pushMessage("Debug: ","{}".format(layerFields),level=Qgis.Info)
+                    for at in list_contaminats:
+                        layerFields.append(QgsField(at, QVariant.String))
+                    #iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
+                    writer = QgsVectorFileWriter.create(
+                                out_file,
+                                layerFields,
+                                QgsWkbTypes.Polygon,
+                                crs,
+                                transform_context,
+                                save_options
+                            )
+                            # iface.messageBar().pushMessage("Debug: ","fuck here",level=Qgis.Info)
+                    if writer.hasError() != QgsVectorFileWriter.NoError:
+                        msg = 'writting output for sha_ind : {}'.format(writer.errorMessage())
+                        iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
+                        raise Exception(msg)
+            
+                    # iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
+                    index = 1
+                    for feat_dis in tmp_layer.getFeatures():
+                        if feat_dis['isContaminated'] == 1:
+                            tmp_dict = dict()
+                            for each_c in list_contaminats:
+                                tmp_dict[each_c] = float(0.0)
+
+                            #QgsProject.instance().addMapLayer(self.sha_vor_ind_cliped)
+                            for f in self.sha_vor_ind_cliped.getFeatures():
+                                if feat_dis.geometry().contains(f.geometry()):
+                                    for each_c in list(list_contaminats):
+                                        if tmp_dict[each_c] < float(f[each_c]):
+                                            tmp_dict[each_c] = float(f[each_c])
+                            
+                            fet = QgsFeature()
+                            fet.setGeometry(feat_dis.geometry())
+                            new_list = [index]
+                            #QgsMessageLog.logMessage("{}".format(tmp_dict), 'ADREMTOOL', level=Qgis.Info)
+                            for key in list_contaminats:
+                                new_list.append('{}'.format(tmp_dict[key]))
+                            #QgsMessageLog.logMessage("{}".format(new_list), 'ADREMTOOL', level=Qgis.Info) 
+                            fet.setAttributes(new_list)
+                            index = index + 1
+                            
+                            
+                            writer.addFeature(fet)
+                            # iface.messageBar().pushMessage("Debug: ","write",level=Qgis.Info)
+
+                    del writer
+
+        except AttributeError:
+            pass
+
+        try:
+            if self.sha_vor_res_cliped:
+                list_contaminats = []
+                for f in self.sha_vor_res_cliped.getFeatures():
+                    if f['isContaminated'] == 1:
+                        for ke in self.shallow_lim_res:
+                            if f['{}_cont'.format(ke)] == 1:
+                                list_contaminats.append(ke)
+                list_contaminats = list(set(list_contaminats))
+                
+                layer_modif = self.sha_vor_res_cliped
+
+                if len(list_contaminats)!= 0:
+                    ###############################################################
+                    param_disolve = {
+                    'INPUT' : layer_modif,
+                    'FIELD' : ['isContaminated'],
+                    'OUTPUT' : 'TEMPORARY_OUTPUT'
+                    }
+            
+                    res = processing.run("native:dissolve", param_disolve)
+                    tmp_layer_0 = res['OUTPUT']
+                    #reCatLayer(tmp_layer)
+                    #QgsProject.instance().addMapLayer(tmp_layer)
+                    
+                    param_multipart = {
+                        'INPUT' : tmp_layer_0,
+                        'OUTPUT' : 'TEMPORARY_OUTPUT'
+                    }
+                    res_1 = processing.run('qgis:multiparttosingleparts',param_multipart)
+
+                    tmp_layer = res_1['OUTPUT']
+                    #QgsProject.instance().addMapLayer(tmp_layer)
+
+
+                    ###############################################################
+
+
+
+                    out_file = os.path.join(self.dlg.outputDir.text(), 'shallow_polluted_on_res.shp')
+                    
+                    crs = QgsProject.instance().crs()
+                    # iface.messageBar().pushMessage("Debug: ","{}".format(crs),level=Qgis.Info)
+                    transform_context = QgsProject.instance().transformContext()
+                    # iface.messageBar().pushMessage("Debug: ","{}".format(transform_context),level=Qgis.Info)
+                    save_options = QgsVectorFileWriter.SaveVectorOptions()
+                    save_options.driverName = "ESRI Shapefile"
+                    save_options.fileEncoding = "UTF-8"
+
+                    layerFields = QgsFields()
+                    layerFields.append(QgsField('source',QVariant.Int))
+                    #iface.messageBar().pushMessage("Debug: ","{}".format(layerFields),level=Qgis.Info)
+                    for at in list_contaminats:
+                        layerFields.append(QgsField(at, QVariant.String))
+                    #iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
+                    writer = QgsVectorFileWriter.create(
+                                out_file,
+                                layerFields,
+                                QgsWkbTypes.Polygon,
+                                crs,
+                                transform_context,
+                                save_options
+                            )
+                            # iface.messageBar().pushMessage("Debug: ","fuck here",level=Qgis.Info)
+                    if writer.hasError() != QgsVectorFileWriter.NoError:
+                        msg = 'writting output for sha_ind : {}'.format(writer.errorMessage())
+                        iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
+                        raise Exception(msg)
+            
+                    index = 1
+                    for feat_dis in tmp_layer.getFeatures():
+                        if feat_dis['isContaminated'] == 1:
+                            tmp_dict = dict()
+                            for each_c in list_contaminats:
+                                tmp_dict[each_c] = float(0.0)
+
+                            #QgsProject.instance().addMapLayer(self.sha_vor_ind_cliped)
+                            for f in self.sha_vor_res_cliped.getFeatures():
+                                if feat_dis.geometry().contains(f.geometry()):
+                                    for each_c in list(list_contaminats):
+                                        if tmp_dict[each_c] < float(f[each_c]):
+                                            tmp_dict[each_c] = float(f[each_c])
+                            
+                            fet = QgsFeature()
+                            fet.setGeometry(feat_dis.geometry())
+                            new_list = [index]
+                            #QgsMessageLog.logMessage("{}".format(tmp_dict), 'ADREMTOOL', level=Qgis.Info)
+                            for key in list_contaminats:
+                                new_list.append('{}'.format(tmp_dict[key]))
+                            #QgsMessageLog.logMessage("{}".format(new_list), 'ADREMTOOL', level=Qgis.Info) 
+                            fet.setAttributes(new_list)
+                            index = index + 1
+                            
+                            
+                            writer.addFeature(fet)
+                            # iface.messageBar().pushMessage("Debug: ","write",level=Qgis.Info)
+
+                    del writer
+
+        except AttributeError:
+            pass
+
+        try:
+            if self.deep_vor_res_cliped:
+                list_contaminats = []
+                for f in self.deep_vor_res_cliped.getFeatures():
+                    if f['isContaminated'] == 1:
+                        for ke in self.deep_lim_res:
+                            if f['{}_cont'.format(ke)] == 1:
+                                list_contaminats.append(ke)
+                list_contaminats = list(set(list_contaminats))
+                
+                layer_modif = self.deep_vor_res_cliped
+
+                if len(list_contaminats)!= 0:
+                    ###############################################################
+                    param_disolve = {
+                    'INPUT' : layer_modif,
+                    'FIELD' : ['isContaminated'],
+                    'OUTPUT' : 'TEMPORARY_OUTPUT'
+                    }
+            
+                    res = processing.run("native:dissolve", param_disolve)
+                    tmp_layer_0 = res['OUTPUT']
+                    #reCatLayer(tmp_layer)
+                    #QgsProject.instance().addMapLayer(tmp_layer)
+                    
+                    param_multipart = {
+                        'INPUT' : tmp_layer_0,
+                        'OUTPUT' : 'TEMPORARY_OUTPUT'
+                    }
+                    res_1 = processing.run('qgis:multiparttosingleparts',param_multipart)
+
+                    tmp_layer = res_1['OUTPUT']
+                    #QgsProject.instance().addMapLayer(tmp_layer)
+
+
+                    ###############################################################
+
+
+
+                    out_file = os.path.join(self.dlg.outputDir.text(), 'deep_soil_polluted_on_res.shp')
+                    
+                    crs = QgsProject.instance().crs()
+                    # iface.messageBar().pushMessage("Debug: ","{}".format(crs),level=Qgis.Info)
+                    transform_context = QgsProject.instance().transformContext()
+                    # iface.messageBar().pushMessage("Debug: ","{}".format(transform_context),level=Qgis.Info)
+                    save_options = QgsVectorFileWriter.SaveVectorOptions()
+                    save_options.driverName = "ESRI Shapefile"
+                    save_options.fileEncoding = "UTF-8"
+
+                    layerFields = QgsFields()
+                    layerFields.append(QgsField('source',QVariant.Int))
+                    #iface.messageBar().pushMessage("Debug: ","{}".format(layerFields),level=Qgis.Info)
+                    for at in list_contaminats:
+                        layerFields.append(QgsField(at, QVariant.String))
+                    #iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
+                    writer = QgsVectorFileWriter.create(
+                                out_file,
+                                layerFields,
+                                QgsWkbTypes.Polygon,
+                                crs,
+                                transform_context,
+                                save_options
+                            )
+                            # iface.messageBar().pushMessage("Debug: ","fuck here",level=Qgis.Info)
+                    if writer.hasError() != QgsVectorFileWriter.NoError:
+                        msg = 'writting output for sha_ind : {}'.format(writer.errorMessage())
+                        iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
+                        raise Exception(msg)
+            
+                    index = 1
+                    for feat_dis in tmp_layer.getFeatures():
+                        if feat_dis['isContaminated'] == 1:
+                            tmp_dict = dict()
+                            for each_c in list_contaminats:
+                                tmp_dict[each_c] = float(0.0)
+
+                            #QgsProject.instance().addMapLayer(self.sha_vor_ind_cliped)
+                            for f in self.deep_vor_res_cliped.getFeatures():
+                                if feat_dis.geometry().contains(f.geometry()):
+                                    for each_c in list(list_contaminats):
+                                        if tmp_dict[each_c] < float(f[each_c]):
+                                            tmp_dict[each_c] = float(f[each_c])
+                            
+                            fet = QgsFeature()
+                            fet.setGeometry(feat_dis.geometry())
+                            new_list = [index]
+                            #QgsMessageLog.logMessage("{}".format(tmp_dict), 'ADREMTOOL', level=Qgis.Info)
+                            for key in list_contaminats:
+                                new_list.append('{}'.format(tmp_dict[key]))
+                            #QgsMessageLog.logMessage("{}".format(new_list), 'ADREMTOOL', level=Qgis.Info) 
+                            fet.setAttributes(new_list)
+                            index = index + 1
+                            
+                            
+                            writer.addFeature(fet)
+                            # iface.messageBar().pushMessage("Debug: ","write",level=Qgis.Info)
+
+                    del writer
+
+        except AttributeError:
+            pass
+
+        try:
+            if self.deep_vor_ind_cliped:
+                list_contaminats = []
+                for f in self.deep_vor_ind_cliped.getFeatures():
+                    if f['isContaminated'] == 1:
+                        for ke in self.deep_lim_ind:
+                            if f['{}_cont'.format(ke)] == 1:
+                                list_contaminats.append(ke)
+                list_contaminats = list(set(list_contaminats))
+                
+                layer_modif = self.deep_vor_ind_cliped
+
+                if len(list_contaminats)!= 0:
+                    ###############################################################
+                    param_disolve = {
+                    'INPUT' : layer_modif,
+                    'FIELD' : ['isContaminated'],
+                    'OUTPUT' : 'TEMPORARY_OUTPUT'
+                    }
+            
+                    res = processing.run("native:dissolve", param_disolve)
+                    tmp_layer_0 = res['OUTPUT']
+                    #reCatLayer(tmp_layer)
+                    #QgsProject.instance().addMapLayer(tmp_layer)
+                    
+                    param_multipart = {
+                        'INPUT' : tmp_layer_0,
+                        'OUTPUT' : 'TEMPORARY_OUTPUT'
+                    }
+                    res_1 = processing.run('qgis:multiparttosingleparts',param_multipart)
+
+                    tmp_layer = res_1['OUTPUT']
+                    #QgsProject.instance().addMapLayer(tmp_layer)
+
+
+                    ###############################################################
+
+                    out_file = os.path.join(self.dlg.outputDir.text(), 'deep_soil_polluted_on_res.shp')
+                    
+                    crs = QgsProject.instance().crs()
+                    # iface.messageBar().pushMessage("Debug: ","{}".format(crs),level=Qgis.Info)
+                    transform_context = QgsProject.instance().transformContext()
+                    # iface.messageBar().pushMessage("Debug: ","{}".format(transform_context),level=Qgis.Info)
+                    save_options = QgsVectorFileWriter.SaveVectorOptions()
+                    save_options.driverName = "ESRI Shapefile"
+                    save_options.fileEncoding = "UTF-8"
+
+                    layerFields = QgsFields()
+                    layerFields.append(QgsField('source',QVariant.Int))
+                    #iface.messageBar().pushMessage("Debug: ","{}".format(layerFields),level=Qgis.Info)
+                    for at in list_contaminats:
+                        layerFields.append(QgsField(at, QVariant.String))
+                    #iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
+                    writer = QgsVectorFileWriter.create(
+                                out_file,
+                                layerFields,
+                                QgsWkbTypes.Polygon,
+                                crs,
+                                transform_context,
+                                save_options
+                            )
+                            # iface.messageBar().pushMessage("Debug: ","fuck here",level=Qgis.Info)
+                    if writer.hasError() != QgsVectorFileWriter.NoError:
+                        msg = 'writting output for sha_ind : {}'.format(writer.errorMessage())
+                        iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
+                        raise Exception(msg)
+            
+                    index = 1
+                    for feat_dis in tmp_layer.getFeatures():
+                        if feat_dis['isContaminated'] == 1:
+                            tmp_dict = dict()
+                            for each_c in list_contaminats:
+                                tmp_dict[each_c] = float(0.0)
+
+                            #QgsProject.instance().addMapLayer(self.sha_vor_ind_cliped)
+                            for f in self.deep_vor_ind_cliped.getFeatures():
+                                if feat_dis.geometry().contains(f.geometry()):
+                                    for each_c in list(list_contaminats):
+                                        if tmp_dict[each_c] < float(f[each_c]):
+                                            tmp_dict[each_c] = float(f[each_c])
+                            
+                            fet = QgsFeature()
+                            fet.setGeometry(feat_dis.geometry())
+                            new_list = [index]
+                            #QgsMessageLog.logMessage("{}".format(tmp_dict), 'ADREMTOOL', level=Qgis.Info)
+                            for key in list_contaminats:
+                                new_list.append('{}'.format(tmp_dict[key]))
+                            #QgsMessageLog.logMessage("{}".format(new_list), 'ADREMTOOL', level=Qgis.Info) 
+                            fet.setAttributes(new_list)
+                            index = index + 1
+                            
+                            
+                            writer.addFeature(fet)
+                            # iface.messageBar().pushMessage("Debug: ","write",level=Qgis.Info)
+
+                    del writer
+        except AttributeError:
+            pass
+
+        try:
+            if self.aquifer_vor_cliped:
+                list_contaminats = []
+                for f in self.aquifer_vor_cliped.getFeatures():
+                    if f['isContaminated'] == 1:
+                        for ke in self.aquifer_lim:
+                            if f['{}_cont'.format(ke)] == 1:
+                                list_contaminats.append(ke)
+                list_contaminats = list(set(list_contaminats))
+                
+                layer_modif = self.aquifer_vor_cliped
+
+                if len(list_contaminats)!= 0:
+                    ###############################################################
+                    param_disolve = {
+                    'INPUT' : layer_modif,
+                    'FIELD' : ['isContaminated'],
+                    'OUTPUT' : 'TEMPORARY_OUTPUT'
+                    }
+            
+                    res = processing.run("native:dissolve", param_disolve)
+                    tmp_layer_0 = res['OUTPUT']
+                    #reCatLayer(tmp_layer)
+                    #QgsProject.instance().addMapLayer(tmp_layer)
+                    
+                    param_multipart = {
+                        'INPUT' : tmp_layer_0,
+                        'OUTPUT' : 'TEMPORARY_OUTPUT'
+                    }
+                    res_1 = processing.run('qgis:multiparttosingleparts',param_multipart)
+
+                    tmp_layer = res_1['OUTPUT']
+                    #QgsProject.instance().addMapLayer(tmp_layer)
+
+
+                    ###############################################################
+
+                    out_file = os.path.join(self.dlg.outputDir.text(), 'deep_soil_polluted_on_res.shp')
+                    
+                    crs = QgsProject.instance().crs()
+                    # iface.messageBar().pushMessage("Debug: ","{}".format(crs),level=Qgis.Info)
+                    transform_context = QgsProject.instance().transformContext()
+                    # iface.messageBar().pushMessage("Debug: ","{}".format(transform_context),level=Qgis.Info)
+                    save_options = QgsVectorFileWriter.SaveVectorOptions()
+                    save_options.driverName = "ESRI Shapefile"
+                    save_options.fileEncoding = "UTF-8"
+
+                    layerFields = QgsFields()
+                    layerFields.append(QgsField('source',QVariant.Int))
+                    #iface.messageBar().pushMessage("Debug: ","{}".format(layerFields),level=Qgis.Info)
+                    for at in list_contaminats:
+                        layerFields.append(QgsField(at, QVariant.String))
+                    #iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
+                    writer = QgsVectorFileWriter.create(
+                                out_file,
+                                layerFields,
+                                QgsWkbTypes.Polygon,
+                                crs,
+                                transform_context,
+                                save_options
+                            )
+                            # iface.messageBar().pushMessage("Debug: ","fuck here",level=Qgis.Info)
+                    if writer.hasError() != QgsVectorFileWriter.NoError:
+                        msg = 'writting output for sha_ind : {}'.format(writer.errorMessage())
+                        iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
+                        raise Exception(msg)
+            
+                    index = 1
+                    for feat_dis in tmp_layer.getFeatures():
+                        if feat_dis['isContaminated'] == 1:
+                            tmp_dict = dict()
+                            for each_c in list_contaminats:
+                                tmp_dict[each_c] = float(0.0)
+
+                            #QgsProject.instance().addMapLayer(self.sha_vor_ind_cliped)
+                            for f in self.aquifer_vor_cliped.getFeatures():
+                                if feat_dis.geometry().contains(f.geometry()):
+                                    for each_c in list(list_contaminats):
+                                        if tmp_dict[each_c] < float(f[each_c]):
+                                            tmp_dict[each_c] = float(f[each_c])
+                            
+                            fet = QgsFeature()
+                            fet.setGeometry(feat_dis.geometry())
+                            new_list = [index]
+                            #QgsMessageLog.logMessage("{}".format(tmp_dict), 'ADREMTOOL', level=Qgis.Info)
+                            for key in list_contaminats:
+                                new_list.append('{}'.format(tmp_dict[key]))
+                            #QgsMessageLog.logMessage("{}".format(new_list), 'ADREMTOOL', level=Qgis.Info) 
+                            fet.setAttributes(new_list)
+                            index = index + 1
+                            
+                            
+                            writer.addFeature(fet)
+                            # iface.messageBar().pushMessage("Debug: ","write",level=Qgis.Info)
+
+                    del writer
+
+        except AttributeError:
+            pass
 
     def _show_help(self):
         help_file = 'file:///{0}'.format(Path(os.path.join(os.path.dirname(__file__),'help/build/html/index.html')))
@@ -1213,7 +1722,9 @@ class ADREMTool:
             if self.dlg.filename_aquifer_csv:
                 self._process_csv_aquifer()
 
-            self.AnalisisAndOutput()
+            self._analysis()
+            
+            self._mergeNdOutput()
 
             self.dlg.close()
 

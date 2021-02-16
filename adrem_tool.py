@@ -1168,7 +1168,10 @@ class ADREMTool:
         except AttributeError:
             pass
 
+    
     def _mergeNdOutput(self):
+        root = QgsProject.instance().layerTreeRoot()
+        group_output = root.addGroup('Output')
 
         try:
             if self.sha_vor_ind_cliped:
@@ -1268,6 +1271,12 @@ class ADREMTool:
                             # iface.messageBar().pushMessage("Debug: ","write",level=Qgis.Info)
 
                     del writer
+                    out_sha_pol_ind = QgsVectorLayer(out_file, 'shallow_polluted_on_ind', 'ogr')
+                    if out_sha_pol_ind.isValid():
+                        set_fill_color(out_sha_pol_ind)
+                        QgsProject.instance().addMapLayer(out_sha_pol_ind, False)
+                        group_output.addLayer(out_sha_pol_ind)
+                    
 
         except AttributeError:
             pass
@@ -1371,6 +1380,13 @@ class ADREMTool:
 
                     del writer
 
+                    out_sha_pol_res = QgsVectorLayer(out_file, 'shallow_polluted_on_res', 'ogr')
+                    if out_sha_pol_res.isValid():
+                        set_fill_color(out_sha_pol_res)
+                        QgsProject.instance().addMapLayer(out_sha_pol_res, False)
+                        group_output.addLayer(out_sha_pol_res)
+                    
+
         except AttributeError:
             pass
 
@@ -1473,6 +1489,12 @@ class ADREMTool:
 
                     del writer
 
+                    out_deep_pol_res = QgsVectorLayer(out_file, 'deep_soil_polluted_on_res', 'ogr')
+                    if out_deep_pol_res.isValid():
+                        set_fill_color(out_deep_pol_res)
+                        QgsProject.instance().addMapLayer(out_deep_pol_res, False)
+                        group_output.addLayer(out_deep_pol_res)
+
         except AttributeError:
             pass
 
@@ -1513,7 +1535,7 @@ class ADREMTool:
 
                     ###############################################################
 
-                    out_file = os.path.join(self.dlg.outputDir.text(), 'deep_soil_polluted_on_res.shp')
+                    out_file = os.path.join(self.dlg.outputDir.text(), 'deep_soil_polluted_on_ind.shp')
                     
                     crs = QgsProject.instance().crs()
                     # iface.messageBar().pushMessage("Debug: ","{}".format(crs),level=Qgis.Info)
@@ -1572,6 +1594,13 @@ class ADREMTool:
                             # iface.messageBar().pushMessage("Debug: ","write",level=Qgis.Info)
 
                     del writer
+
+                    out_deep_pol_ind = QgsVectorLayer(out_file, 'deep_soil_polluted_on_ind', 'ogr')
+                    if out_deep_pol_ind.isValid():
+                        set_fill_color(out_deep_pol_ind)
+                        QgsProject.instance().addMapLayer(out_deep_pol_ind, False)
+                        group_output.addLayer(out_deep_pol_ind)
+
         except AttributeError:
             pass
 
@@ -1612,7 +1641,7 @@ class ADREMTool:
 
                     ###############################################################
 
-                    out_file = os.path.join(self.dlg.outputDir.text(), 'deep_soil_polluted_on_res.shp')
+                    out_file = os.path.join(self.dlg.outputDir.text(), 'aquifer_polluted.shp')
                     
                     crs = QgsProject.instance().crs()
                     # iface.messageBar().pushMessage("Debug: ","{}".format(crs),level=Qgis.Info)
@@ -1671,6 +1700,13 @@ class ADREMTool:
                             # iface.messageBar().pushMessage("Debug: ","write",level=Qgis.Info)
 
                     del writer
+
+
+                    out_aquifer_pol = QgsVectorLayer(out_file, 'aquifer_polluted', 'ogr')
+                    if out_aquifer_pol.isValid():
+                        set_fill_color(out_aquifer_pol)
+                        QgsProject.instance().addMapLayer(out_aquifer_pol, False)
+                        group_output.addLayer(out_aquifer_pol)
 
         except AttributeError:
             pass

@@ -22,15 +22,19 @@
  ***************************************************************************/
 """
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QUrl
-from qgis.PyQt.QtGui import QIcon, QDesktopServices
+from qgis.PyQt.QtGui import QIcon, QDesktopServices, QStandardItemModel, QStandardItem
 from qgis.PyQt.QtWidgets import QAction, QFileDialog
 
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
 from .adrem_tool_dialog import ADREMToolDialog
+################################################
+from .select_sources import SelectSourceDialog #
+################################################
+
 import os.path
-######################################################
+################################################
 from pathlib import Path
 import os
 import sys
@@ -1172,6 +1176,7 @@ class ADREMTool:
     def _mergeNdOutput(self):
         root = QgsProject.instance().layerTreeRoot()
         group_output = root.addGroup('Output')
+        group_to_be_remediate = root.addGroup('To be remediate')
 
         try:
             if self.sha_vor_ind_cliped:
@@ -1242,6 +1247,11 @@ class ADREMTool:
                         raise Exception(msg)
             
                     # iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
+                    
+                    ################################################
+                    list_sources = dict()
+                    ################################################
+
                     index = 1
                     for feat_dis in tmp_layer.getFeatures():
                         if feat_dis['isContaminated'] == 1:
@@ -1264,19 +1274,83 @@ class ADREMTool:
                                 new_list.append('{}'.format(tmp_dict[key]))
                             #QgsMessageLog.logMessage("{}".format(new_list), 'ADREMTOOL', level=Qgis.Info) 
                             fet.setAttributes(new_list)
+
+                            list_sources["source_of_id_{}".format(index)] = index
+
                             index = index + 1
                             
                             
                             writer.addFeature(fet)
                             # iface.messageBar().pushMessage("Debug: ","write",level=Qgis.Info)
 
+                            
+
                     del writer
                     out_sha_pol_ind = QgsVectorLayer(out_file, 'shallow_polluted_on_ind', 'ogr')
                     if out_sha_pol_ind.isValid():
                         set_fill_color(out_sha_pol_ind)
+                        # out_sha_pol_ind.setCustomProperty("labeling", "pal")
+                        # out_sha_pol_ind.setCustomProperty("labeling/enabled", "true")
+                        # out_sha_pol_ind.setCustomProperty("labeling/fontFamily", "Arial")
+                        # out_sha_pol_ind.setCustomProperty("labeling/fontSize", "12")
+                        # out_sha_pol_ind.setCustomProperty("labeling/isExpression", True)
+                        # out_sha_pol_ind.setCustomProperty("labeling/fieldName", "source")
+                        # out_sha_pol_ind.setCustomProperty("labeling/placement", "2")
                         QgsProject.instance().addMapLayer(out_sha_pol_ind, False)
                         group_output.addLayer(out_sha_pol_ind)
+                        
+                  
+
+                    #### select polygons
+                    dialog_sha_ind = SelectSourceDialog()
+                    model = QStandardItemModel()
+                    for each_item in list_sources:
+                        model.appendRow(QStandardItem(each_item))
+
+                    dialog_sha_ind.listView.setModel(model)
+                    dialog_sha_ind.show()
+                    ok = dialog_sha_ind.exec_()
+                    if ok:
+                        selected = dialog_sha_ind.listView.selectedIndexes()
+                        
+                        selids = []
+                        for sid in selected:
+                            selids.append(sid.data())
+                        #QgsMessageLog.logMessage("{}".format(selids), 'ADREMTOOL', level=Qgis.Info)
+                        if len(selids)!= 0:
+                            out_sha_pol_ind.selectAll()
+                            cloned_ = processing.run("native:saveselectedfeatures",
+                                {'INPUT': out_sha_pol_ind, 'OUTPUT': 'memory:'})['OUTPUT']
+                            out_sha_pol_ind.removeSelection()
+                            cloned_.setName("sha_ind_to_be_remediate")
+                            
+                            dfeats = []
+                            for feat in cloned_.getFeatures():
+                                if feat['source'] not in list(map(lambda x: list_sources[x],selids)):
+                                    dfeats.append(feat)
+
+                            caps = cloned_.dataProvider().capabilities()
+                            if caps & QgsVectorDataProvider.DeleteAttributes:
+                                res = cloned_.dataProvider().deleteFeatures(dfeats)
+                                if res:
+                                    fi_ = os.path.join(self.dlg.outputDir.text(), 'shallow_polluted_on_ind_to_be_remediate.shp')
+                                    error = QgsVectorFileWriter.writeAsVectorFormatV2(
+                                                cloned_,
+                                                fi_,
+                                                transform_context,
+                                                save_options)
+                                    if error[0] != QgsVectorFileWriter.NoError:
+                                        msg = 'Error on writting output to : {}'.format(fi_)
+                                        iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
+                                        raise Exception(msg)
+
+                                    set_fill_color(cloned_)
+                                    QgsProject.instance().addMapLayer(cloned_, False)
+                                    group_to_be_remediate.addLayer(cloned_)
+
+
                     
+
 
         except AttributeError:
             pass
@@ -1344,12 +1418,16 @@ class ADREMTool:
                                 transform_context,
                                 save_options
                             )
-                            # iface.messageBar().pushMessage("Debug: ","fuck here",level=Qgis.Info)
+                  
                     if writer.hasError() != QgsVectorFileWriter.NoError:
                         msg = 'writting output for sha_ind : {}'.format(writer.errorMessage())
                         iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                         raise Exception(msg)
             
+                    ################################################
+                    list_sources = dict()
+                    ################################################
+
                     index = 1
                     for feat_dis in tmp_layer.getFeatures():
                         if feat_dis['isContaminated'] == 1:
@@ -1372,6 +1450,9 @@ class ADREMTool:
                                 new_list.append('{}'.format(tmp_dict[key]))
                             #QgsMessageLog.logMessage("{}".format(new_list), 'ADREMTOOL', level=Qgis.Info) 
                             fet.setAttributes(new_list)
+
+                            list_sources["source_of_id_{}".format(index)] = index
+
                             index = index + 1
                             
                             
@@ -1385,6 +1466,54 @@ class ADREMTool:
                         set_fill_color(out_sha_pol_res)
                         QgsProject.instance().addMapLayer(out_sha_pol_res, False)
                         group_output.addLayer(out_sha_pol_res)
+
+                    #### select polygons
+                    dialog_sha_res = SelectSourceDialog()
+                    model = QStandardItemModel()
+                    for each_item in list_sources:
+                        model.appendRow(QStandardItem(each_item))
+
+                    dialog_sha_res.listView.setModel(model)
+                    dialog_sha_res.show()
+                    ok = dialog_sha_res.exec_()
+                    if ok:
+                        selected = dialog_sha_res.listView.selectedIndexes()
+                        
+                        selids = []
+                        for sid in selected:
+                            selids.append(sid.data())
+                        #QgsMessageLog.logMessage("{}".format(selids), 'ADREMTOOL', level=Qgis.Info)
+                        if len(selids)!= 0:
+                            out_sha_pol_res.selectAll()
+                            cloned_ = processing.run("native:saveselectedfeatures",
+                                {'INPUT': out_sha_pol_res, 'OUTPUT': 'memory:'})['OUTPUT']
+                            out_sha_pol_res.removeSelection()
+                            cloned_.setName("sha_res_to_be_remediate")
+                            
+                            dfeats = []
+                            for feat in cloned_.getFeatures():
+                                if feat['source'] not in list(map(lambda x: list_sources[x],selids)):
+                                    dfeats.append(feat)
+
+                            caps = cloned_.dataProvider().capabilities()
+                            if caps & QgsVectorDataProvider.DeleteAttributes:
+                                res = cloned_.dataProvider().deleteFeatures(dfeats)
+                                if res:
+                                    fi_ = os.path.join(self.dlg.outputDir.text(), 'shallow_polluted_on_res_to_be_remediate.shp')
+                                    error = QgsVectorFileWriter.writeAsVectorFormatV2(
+                                                cloned_,
+                                                fi_,
+                                                transform_context,
+                                                save_options)
+                                    if error[0] != QgsVectorFileWriter.NoError:
+                                        msg = 'Error on writting output to : {}'.format(fi_)
+                                        iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
+                                        raise Exception(msg)
+                                    
+                                    set_fill_color(cloned_)
+                                    QgsProject.instance().addMapLayer(cloned_, False)
+                                    group_to_be_remediate.addLayer(cloned_)
+
                     
 
         except AttributeError:
@@ -1458,7 +1587,11 @@ class ADREMTool:
                         msg = 'writting output for sha_ind : {}'.format(writer.errorMessage())
                         iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                         raise Exception(msg)
-            
+                    
+                    ################################################
+                    list_sources = dict()
+                    ################################################
+
                     index = 1
                     for feat_dis in tmp_layer.getFeatures():
                         if feat_dis['isContaminated'] == 1:
@@ -1481,6 +1614,9 @@ class ADREMTool:
                                 new_list.append('{}'.format(tmp_dict[key]))
                             #QgsMessageLog.logMessage("{}".format(new_list), 'ADREMTOOL', level=Qgis.Info) 
                             fet.setAttributes(new_list)
+
+                            list_sources["source_of_id_{}".format(index)] = index
+
                             index = index + 1
                             
                             
@@ -1494,6 +1630,54 @@ class ADREMTool:
                         set_fill_color(out_deep_pol_res)
                         QgsProject.instance().addMapLayer(out_deep_pol_res, False)
                         group_output.addLayer(out_deep_pol_res)
+
+                    #### select polygons
+                    dialog_deep_res = SelectSourceDialog()
+                    model = QStandardItemModel()
+                    for each_item in list_sources:
+                        model.appendRow(QStandardItem(each_item))
+
+                    dialog_deep_res.listView.setModel(model)
+                    dialog_deep_res.show()
+                    ok = dialog_deep_res.exec_()
+                    if ok:
+                        selected = dialog_deep_res.listView.selectedIndexes()
+                        
+                        selids = []
+                        for sid in selected:
+                            selids.append(sid.data())
+                        #QgsMessageLog.logMessage("{}".format(selids), 'ADREMTOOL', level=Qgis.Info)
+                        if len(selids)!= 0:
+                            out_deep_pol_res.selectAll()
+                            cloned_ = processing.run("native:saveselectedfeatures",
+                                {'INPUT': out_deep_pol_res, 'OUTPUT': 'memory:'})['OUTPUT']
+                            out_deep_pol_res.removeSelection()
+                            cloned_.setName("deep_res_to_be_remediate")
+                            
+                            dfeats = []
+                            for feat in cloned_.getFeatures():
+                                if feat['source'] not in list(map(lambda x: list_sources[x],selids)):
+                                    dfeats.append(feat)
+
+                            caps = cloned_.dataProvider().capabilities()
+                            if caps & QgsVectorDataProvider.DeleteAttributes:
+                                res = cloned_.dataProvider().deleteFeatures(dfeats)
+                                if res:
+                                    fi_ = os.path.join(self.dlg.outputDir.text(), 'deep_soil_polluted_on_res_to_be_remediate.shp')
+                                    error = QgsVectorFileWriter.writeAsVectorFormatV2(
+                                                cloned_,
+                                                fi_,
+                                                transform_context,
+                                                save_options)
+                                    if error[0] != QgsVectorFileWriter.NoError:
+                                        msg = 'Error on writting output to : {}'.format(fi_)
+                                        iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
+                                        raise Exception(msg)
+                                    
+                                    set_fill_color(cloned_)
+                                    QgsProject.instance().addMapLayer(cloned_, False)
+                                    group_to_be_remediate.addLayer(cloned_)
+
 
         except AttributeError:
             pass
@@ -1565,6 +1749,10 @@ class ADREMTool:
                         iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                         raise Exception(msg)
             
+                    ################################################
+                    list_sources = dict()
+                    ################################################
+
                     index = 1
                     for feat_dis in tmp_layer.getFeatures():
                         if feat_dis['isContaminated'] == 1:
@@ -1587,6 +1775,9 @@ class ADREMTool:
                                 new_list.append('{}'.format(tmp_dict[key]))
                             #QgsMessageLog.logMessage("{}".format(new_list), 'ADREMTOOL', level=Qgis.Info) 
                             fet.setAttributes(new_list)
+
+                            list_sources["source_of_id_{}".format(index)] = index
+
                             index = index + 1
                             
                             
@@ -1600,6 +1791,53 @@ class ADREMTool:
                         set_fill_color(out_deep_pol_ind)
                         QgsProject.instance().addMapLayer(out_deep_pol_ind, False)
                         group_output.addLayer(out_deep_pol_ind)
+
+                    #### select polygons
+                    dialog_deep_ind = SelectSourceDialog()
+                    model = QStandardItemModel()
+                    for each_item in list_sources:
+                        model.appendRow(QStandardItem(each_item))
+
+                    dialog_deep_ind.listView.setModel(model)
+                    dialog_deep_ind.show()
+                    ok = dialog_deep_ind.exec_()
+                    if ok:
+                        selected = dialog_deep_ind.listView.selectedIndexes()
+                        
+                        selids = []
+                        for sid in selected:
+                            selids.append(sid.data())
+                        #QgsMessageLog.logMessage("{}".format(selids), 'ADREMTOOL', level=Qgis.Info)
+                        if len(selids)!= 0:
+                            out_deep_pol_ind.selectAll()
+                            cloned_ = processing.run("native:saveselectedfeatures",
+                                {'INPUT': out_deep_pol_ind, 'OUTPUT': 'memory:'})['OUTPUT']
+                            out_deep_pol_ind.removeSelection()
+                            cloned_.setName("deep_ind_to_be_remediate")
+                            
+                            dfeats = []
+                            for feat in cloned_.getFeatures():
+                                if feat['source'] not in list(map(lambda x: list_sources[x],selids)):
+                                    dfeats.append(feat)
+
+                            caps = cloned_.dataProvider().capabilities()
+                            if caps & QgsVectorDataProvider.DeleteAttributes:
+                                res = cloned_.dataProvider().deleteFeatures(dfeats)
+                                if res:
+                                    fi_ = os.path.join(self.dlg.outputDir.text(), 'deep_soil_polluted_on_ind_to_be_remediate.shp')
+                                    error = QgsVectorFileWriter.writeAsVectorFormatV2(
+                                                cloned_,
+                                                fi_,
+                                                transform_context,
+                                                save_options)
+                                    if error[0] != QgsVectorFileWriter.NoError:
+                                        msg = 'Error on writting output to : {}'.format(fi_)
+                                        iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
+                                        raise Exception(msg)
+                                    
+                                    set_fill_color(cloned_)
+                                    QgsProject.instance().addMapLayer(cloned_, False)
+                                    group_to_be_remediate.addLayer(cloned_)
 
         except AttributeError:
             pass
@@ -1665,12 +1903,16 @@ class ADREMTool:
                                 transform_context,
                                 save_options
                             )
-                            # iface.messageBar().pushMessage("Debug: ","fuck here",level=Qgis.Info)
+                            
                     if writer.hasError() != QgsVectorFileWriter.NoError:
                         msg = 'writting output for sha_ind : {}'.format(writer.errorMessage())
                         iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                         raise Exception(msg)
             
+                    ################################################
+                    list_sources = dict()
+                    ################################################
+                    
                     index = 1
                     for feat_dis in tmp_layer.getFeatures():
                         if feat_dis['isContaminated'] == 1:
@@ -1693,6 +1935,9 @@ class ADREMTool:
                                 new_list.append('{}'.format(tmp_dict[key]))
                             #QgsMessageLog.logMessage("{}".format(new_list), 'ADREMTOOL', level=Qgis.Info) 
                             fet.setAttributes(new_list)
+
+                            list_sources["source_of_id_{}".format(index)] = index
+
                             index = index + 1
                             
                             
@@ -1707,6 +1952,53 @@ class ADREMTool:
                         set_fill_color(out_aquifer_pol)
                         QgsProject.instance().addMapLayer(out_aquifer_pol, False)
                         group_output.addLayer(out_aquifer_pol)
+
+                    #### select polygons
+                    dialog_aquifer = SelectSourceDialog()
+                    model = QStandardItemModel()
+                    for each_item in list_sources:
+                        model.appendRow(QStandardItem(each_item))
+
+                    dialog_aquifer.listView.setModel(model)
+                    dialog_aquifer.show()
+                    ok = dialog_aquifer.exec_()
+                    if ok:
+                        selected = dialog_aquifer.listView.selectedIndexes()
+                        
+                        selids = []
+                        for sid in selected:
+                            selids.append(sid.data())
+                        #QgsMessageLog.logMessage("{}".format(selids), 'ADREMTOOL', level=Qgis.Info)
+                        if len(selids)!= 0:
+                            out_aquifer_pol.selectAll()
+                            cloned_ = processing.run("native:saveselectedfeatures",
+                                {'INPUT': out_aquifer_pol, 'OUTPUT': 'memory:'})['OUTPUT']
+                            out_aquifer_pol.removeSelection()
+                            cloned_.setName("aquifer_to_be_remediate")
+                            
+                            dfeats = []
+                            for feat in cloned_.getFeatures():
+                                if feat['source'] not in list(map(lambda x: list_sources[x],selids)):
+                                    dfeats.append(feat)
+
+                            caps = cloned_.dataProvider().capabilities()
+                            if caps & QgsVectorDataProvider.DeleteAttributes:
+                                res = cloned_.dataProvider().deleteFeatures(dfeats)
+                                if res:
+                                    fi_ = os.path.join(self.dlg.outputDir.text(), 'aquifer_polluted_to_be_remediate.shp')
+                                    error = QgsVectorFileWriter.writeAsVectorFormatV2(
+                                                cloned_,
+                                                fi_,
+                                                transform_context,
+                                                save_options)
+                                    if error[0] != QgsVectorFileWriter.NoError:
+                                        msg = 'Error on writting output to : {}'.format(fi_)
+                                        iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
+                                        raise Exception(msg)
+                                    
+                                    set_fill_color(cloned_)
+                                    QgsProject.instance().addMapLayer(cloned_, False)
+                                    group_to_be_remediate.addLayer(cloned_)
 
         except AttributeError:
             pass
@@ -1768,7 +2060,9 @@ class ADREMTool:
 
 def set_fill_color(layer):
     _props = layer.renderer().symbol().symbolLayer(0).properties()
+    #QgsMessageLog.logMessage("{}".format(_props), 'ADREMTOOL', level=Qgis.Info)
     #_props['color'] = '232,113,141,170'
+
     actual_color = _props['color']
     a = actual_color.split(',')
     a[-1] = '170'

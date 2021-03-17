@@ -1303,9 +1303,12 @@ class ADREMTool:
 
                     #### select polygons
                     dialog_sha_ind = SelectSourceDialog()
+                    dialog_sha_ind.listView.setSelectionMode(2)
                     model = QStandardItemModel()
                     for each_item in list_sources:
-                        model.appendRow(QStandardItem(each_item))
+                        item = QStandardItem(each_item)
+                        #item.setCheckable(True)
+                        model.appendRow(item)
 
                     dialog_sha_ind.listView.setModel(model)
                     dialog_sha_ind.show()
@@ -1326,8 +1329,13 @@ class ADREMTool:
                             
                             dfeats = []
                             for feat in cloned_.getFeatures():
+                                # QgsMessageLog.logMessage("{}".format(feat), 'ADREMTOOL', level=Qgis.Info)
                                 if feat['source'] not in list(map(lambda x: list_sources[x],selids)):
-                                    dfeats.append(feat)
+                                    dfeats.append(feat['source'])
+                            #QgsMessageLog.logMessage("{}".format(dfeats), 'ADREMTOOL', level=Qgis.Info)
+                           
+
+                            
 
                             caps = cloned_.dataProvider().capabilities()
                             if caps & QgsVectorDataProvider.DeleteAttributes:
@@ -1469,6 +1477,7 @@ class ADREMTool:
 
                     #### select polygons
                     dialog_sha_res = SelectSourceDialog()
+                    dialog_sha_res.listView.setSelectionMode(2)
                     model = QStandardItemModel()
                     for each_item in list_sources:
                         model.appendRow(QStandardItem(each_item))
@@ -1493,7 +1502,7 @@ class ADREMTool:
                             dfeats = []
                             for feat in cloned_.getFeatures():
                                 if feat['source'] not in list(map(lambda x: list_sources[x],selids)):
-                                    dfeats.append(feat)
+                                    dfeats.append(feat['source'])
 
                             caps = cloned_.dataProvider().capabilities()
                             if caps & QgsVectorDataProvider.DeleteAttributes:
@@ -1633,6 +1642,7 @@ class ADREMTool:
 
                     #### select polygons
                     dialog_deep_res = SelectSourceDialog()
+                    dialog_deep_res.listView.setSelectionMode(2)
                     model = QStandardItemModel()
                     for each_item in list_sources:
                         model.appendRow(QStandardItem(each_item))
@@ -1657,7 +1667,7 @@ class ADREMTool:
                             dfeats = []
                             for feat in cloned_.getFeatures():
                                 if feat['source'] not in list(map(lambda x: list_sources[x],selids)):
-                                    dfeats.append(feat)
+                                    dfeats.append(feat['source'])
 
                             caps = cloned_.dataProvider().capabilities()
                             if caps & QgsVectorDataProvider.DeleteAttributes:
@@ -1794,6 +1804,7 @@ class ADREMTool:
 
                     #### select polygons
                     dialog_deep_ind = SelectSourceDialog()
+                    dialog_deep_ind.listView.setSelectionMode(2)
                     model = QStandardItemModel()
                     for each_item in list_sources:
                         model.appendRow(QStandardItem(each_item))
@@ -1818,7 +1829,7 @@ class ADREMTool:
                             dfeats = []
                             for feat in cloned_.getFeatures():
                                 if feat['source'] not in list(map(lambda x: list_sources[x],selids)):
-                                    dfeats.append(feat)
+                                    dfeats.append(feat['source'])
 
                             caps = cloned_.dataProvider().capabilities()
                             if caps & QgsVectorDataProvider.DeleteAttributes:
@@ -1955,6 +1966,7 @@ class ADREMTool:
 
                     #### select polygons
                     dialog_aquifer = SelectSourceDialog()
+                    dialog_aquifer.setSelectionMode(2)
                     model = QStandardItemModel()
                     for each_item in list_sources:
                         model.appendRow(QStandardItem(each_item))
@@ -1979,7 +1991,7 @@ class ADREMTool:
                             dfeats = []
                             for feat in cloned_.getFeatures():
                                 if feat['source'] not in list(map(lambda x: list_sources[x],selids)):
-                                    dfeats.append(feat)
+                                    dfeats.append(feat['source'])
 
                             caps = cloned_.dataProvider().capabilities()
                             if caps & QgsVectorDataProvider.DeleteAttributes:

@@ -1041,7 +1041,7 @@ class ADREMTool:
             
                 reCatLayer(self.sha_vor_ind_cliped)
                 QgsProject.instance().addMapLayer(self.sha_vor_ind_cliped)
-        except AttributeError:
+        except (AttributeError, RuntimeError):
             pass
         
         try:
@@ -1073,7 +1073,7 @@ class ADREMTool:
             
                 reCatLayer(self.sha_vor_res_cliped)
                 QgsProject.instance().addMapLayer(self.sha_vor_res_cliped)
-        except AttributeError:
+        except (AttributeError, RuntimeError):
             pass
 
         try:
@@ -1105,7 +1105,7 @@ class ADREMTool:
             
                 reCatLayer(self.deep_vor_res_cliped)
                 QgsProject.instance().addMapLayer(self.deep_vor_res_cliped)
-        except AttributeError:
+        except (AttributeError, RuntimeError):
             pass
         
         try:
@@ -1137,7 +1137,7 @@ class ADREMTool:
             
                 reCatLayer(self.deep_vor_ind_cliped)
                 QgsProject.instance().addMapLayer(self.deep_vor_ind_cliped)
-        except AttributeError:
+        except (AttributeError, RuntimeError):
             pass
 
         try:
@@ -1169,7 +1169,7 @@ class ADREMTool:
             
                 reCatLayer(self.aquifer_vor_cliped)
                 QgsProject.instance().addMapLayer(self.aquifer_vor_cliped)
-        except AttributeError:
+        except (AttributeError, RuntimeError):
             pass
 
     
@@ -1957,7 +1957,7 @@ class ADREMTool:
 
                     del writer
 
-
+                    QgsMessageLog.logMessage(" we are here", 'ADREMTOOL', level=Qgis.Info)
                     out_aquifer_pol = QgsVectorLayer(out_file, 'aquifer_polluted', 'ogr')
                     if out_aquifer_pol.isValid():
                         set_fill_color(out_aquifer_pol)
@@ -1966,13 +1966,14 @@ class ADREMTool:
 
                     #### select polygons
                     dialog_aquifer = SelectSourceDialog()
-                    dialog_aquifer.setSelectionMode(2)
+                    dialog_aquifer.listView.setSelectionMode(2)
+                    
                     model = QStandardItemModel()
                     for each_item in list_sources:
                         model.appendRow(QStandardItem(each_item))
-
                     dialog_aquifer.listView.setModel(model)
                     dialog_aquifer.show()
+                    #QgsMessageLog.logMessage("Can we reach here", 'ADREMTOOL', level=Qgis.Info)
                     ok = dialog_aquifer.exec_()
                     if ok:
                         selected = dialog_aquifer.listView.selectedIndexes()
@@ -2027,6 +2028,7 @@ class ADREMTool:
         if self.first_start == True:
             self.first_start = False
             self.dlg = ADREMToolDialog()
+            #self.dialog_aquifer = SelectSourceDialog()
 
         # windows title
         self.dlg.setWindowTitle('ADREM tool - 1.0.0')

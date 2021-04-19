@@ -61,7 +61,7 @@ from qgis.utils import iface
 import processing
 from PyQt5.QtCore import QVariant
 from qgis.core.additions.edit import edit
-from .utility import Allegato_first, Allegato_second
+from .utility import Allegato_first, Allegato_second, GroupName, MatrixTech
 ######################################################
 
 url_template = 'file:///{0}?crs=epsg:4326&delimiter={1}&xField={2}&yField={3}'
@@ -99,6 +99,9 @@ class ADREMTool:
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
         self.first_start = None
+
+        self.gpname = GroupName()
+        self.matrixtech = MatrixTech() 
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -1187,7 +1190,7 @@ class ADREMTool:
                             if f['{}_cont'.format(ke)] == 1:
                                 list_contaminats.append(ke)
                 list_contaminats = list(set(list_contaminats))
-                
+                #QgsMessageLog.logMessage("{}".format(list_contaminats), 'ADREMTOOL', level=Qgis.Info)
                 layer_modif = self.sha_vor_ind_cliped
 
                 if len(list_contaminats)!= 0:
@@ -1230,8 +1233,14 @@ class ADREMTool:
                     layerFields.append(QgsField('source',QVariant.Int))
                     #iface.messageBar().pushMessage("Debug: ","{}".format(layerFields),level=Qgis.Info)
                     for at in list_contaminats:
-                        layerFields.append(QgsField(at, QVariant.String))
+                       
+                        layerFields.append(QgsField(at,QVariant.String))
+                    #QgsMessageLog.logMessage("{}".format(layerFields.names()), 'ADREMTOOL', level=Qgis.Info)
                     #iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
+
+                    ########### there is a bug here that shorten the fields names, I dont know how to solve it
+                    field_names = layerFields.names()
+                    ###########################################################
                     writer = QgsVectorFileWriter.create(
                                 out_file,
                                 layerFields,
@@ -1240,7 +1249,7 @@ class ADREMTool:
                                 transform_context,
                                 save_options
                             )
-                            # iface.messageBar().pushMessage("Debug: ","fuck here",level=Qgis.Info)
+                            
                     if writer.hasError() != QgsVectorFileWriter.NoError:
                         msg = 'writting output for sha_ind : {}'.format(writer.errorMessage())
                         iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
@@ -1303,6 +1312,7 @@ class ADREMTool:
 
                     #### select polygons
                     dialog_sha_ind = SelectSourceDialog()
+                    dialog_sha_ind.setWindowTitle("Shallow : Ind")
                     dialog_sha_ind.listView.setSelectionMode(2)
                     model = QStandardItemModel()
                     for each_item in list_sources:
@@ -1356,8 +1366,83 @@ class ADREMTool:
                                     QgsProject.instance().addMapLayer(cloned_, False)
                                     group_to_be_remediate.addLayer(cloned_)
 
+                                    ##############################################################################################
 
-                    
+                                    # tmp_sha_toberemediate_ind = QgsVectorLayer(fi_, 'tmp_sha_toberemediate_ind', 'ogr')
+
+                                    # tmp_attr = []
+                                    # for feat in tmp_sha_toberemediate_ind.fields():
+                                    #     if feat.name() != 'source':
+                                    #         tmp_attr.append(feat.name())
+                                    #QgsMessageLog.logMessage("{}".format(tmp_attr), 'ADREMTOOL', level=Qgis.Info)
+                                    
+                                    tmp_tech = dict()
+                                    for nm in field_names:
+                                        if nm != 'source':
+                                            gp_name = self.gpname.getGroupeName(nm)
+                                            techlsit = self.matrixtech.getTechAASoil(gp_name)
+                                            tmp_tech[nm] = techlsit
+                                    #QgsMessageLog.logMessage("{}".format(tmp_tech), 'ADREMTOOL', level=Qgis.Info)
+
+                                    ###############################################################
+                                    ######################## MATRIx ###############################
+                                    ###############################################################
+
+                                    for cont_name in tmp_tech:
+                                        out_file = os.path.join(self.dlg.outputDir.text(), 'shallow_polluted_on_ind_' + cont_name+ '_AA.shp')
+                                    
+                                        # crs = QgsProject.instance().crs()
+                                        # # iface.messageBar().pushMessage("Debug: ","{}".format(crs),level=Qgis.Info)
+                                        # transform_context = QgsProject.instance().transformContext()
+                                        # # iface.messageBar().pushMessage("Debug: ","{}".format(transform_context),level=Qgis.Info)
+                                        # save_options = QgsVectorFileWriter.SaveVectorOptions()
+                                        # save_options.driverName = "ESRI Shapefile"
+                                        # save_options.fileEncoding = "UTF-8"
+
+                                        layerFields = QgsFields()
+                                        layerFields.append(QgsField('AA',QVariant.String,'string',50.0))
+                                        # #iface.messageBar().pushMessage("Debug: ","{}".format(layerFields),level=Qgis.Info)
+                                        # for at in list_contaminats:
+                                        
+                                        #     layerFields.append(QgsField(at,QVariant.String))
+                                        # #QgsMessageLog.logMessage("{}".format(layerFields.names()), 'ADREMTOOL', level=Qgis.Info)
+                                        # #iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
+
+                                        # ########### there is a bug here that shorten the fields names, I dont know how to solve it
+                                        # field_names = layerFields.names()
+                                        ###########################################################
+                                        writer = QgsVectorFileWriter.create(
+                                                    out_file,
+                                                    layerFields,
+                                                    QgsWkbTypes.Point,
+                                                    crs,
+                                                    transform_context,
+                                                    save_options
+
+                                                )
+                                                
+                                        if writer.hasError() != QgsVectorFileWriter.NoError:
+                                            msg = 'writting no geometry AA sha_ind : {}'.format(writer.errorMessage())
+                                            iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
+                                            raise Exception(msg)
+                                
+                                        
+
+                                        for tech in tmp_tech[cont_name]:
+                                            fet = QgsFeature()
+                                            fet.setAttributes([tech])
+                                            writer.addFeature(fet)
+
+                                                
+
+                                        del writer
+                                        out_sha_pol_ind = QgsVectorLayer(out_file, 'shallow_polluted_on_ind_' + cont_name+ '_AA', 'ogr')
+                                        if out_sha_pol_ind.isValid():
+                                            QgsProject.instance().addMapLayer(out_sha_pol_ind, False)
+                                            group_to_be_remediate.addLayer(out_sha_pol_ind)
+                                                            
+                                                    
+                                    
 
 
         except AttributeError:
@@ -1417,6 +1502,8 @@ class ADREMTool:
                     #iface.messageBar().pushMessage("Debug: ","{}".format(layerFields),level=Qgis.Info)
                     for at in list_contaminats:
                         layerFields.append(QgsField(at, QVariant.String))
+
+                    field_names = layerFields.names()                    
                     #iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
                     writer = QgsVectorFileWriter.create(
                                 out_file,
@@ -1477,6 +1564,7 @@ class ADREMTool:
 
                     #### select polygons
                     dialog_sha_res = SelectSourceDialog()
+                    dialog_sha_res.setWindowTitle("Shallow : Res")
                     dialog_sha_res.listView.setSelectionMode(2)
                     model = QStandardItemModel()
                     for each_item in list_sources:
@@ -1522,6 +1610,82 @@ class ADREMTool:
                                     set_fill_color(cloned_)
                                     QgsProject.instance().addMapLayer(cloned_, False)
                                     group_to_be_remediate.addLayer(cloned_)
+
+
+                                    ##############################################################################################
+
+                                    # tmp_sha_toberemediate_ind = QgsVectorLayer(fi_, 'tmp_sha_toberemediate_ind', 'ogr')
+
+                                    # tmp_attr = []
+                                    # for feat in tmp_sha_toberemediate_ind.fields():
+                                    #     if feat.name() != 'source':
+                                    #         tmp_attr.append(feat.name())
+                                    #QgsMessageLog.logMessage("{}".format(tmp_attr), 'ADREMTOOL', level=Qgis.Info)
+                                    
+                                    tmp_tech = dict()
+                                    for nm in field_names:
+                                        if nm != 'source':
+                                            gp_name = self.gpname.getGroupeName(nm)
+                                            techlsit = self.matrixtech.getTechAASoil(gp_name)
+                                            tmp_tech[nm] = techlsit
+                                    #QgsMessageLog.logMessage("{}".format(tmp_tech), 'ADREMTOOL', level=Qgis.Info)
+
+                                    ###############################################################
+                                    ######################## MATRIx ###############################
+                                    ###############################################################
+
+                                    for cont_name in tmp_tech:
+                                        out_file = os.path.join(self.dlg.outputDir.text(), 'shallow_polluted_on_res_' + cont_name+ '_AA.shp')
+                                    
+                                        # crs = QgsProject.instance().crs()
+                                        # # iface.messageBar().pushMessage("Debug: ","{}".format(crs),level=Qgis.Info)
+                                        # transform_context = QgsProject.instance().transformContext()
+                                        # # iface.messageBar().pushMessage("Debug: ","{}".format(transform_context),level=Qgis.Info)
+                                        # save_options = QgsVectorFileWriter.SaveVectorOptions()
+                                        # save_options.driverName = "ESRI Shapefile"
+                                        # save_options.fileEncoding = "UTF-8"
+
+                                        layerFields = QgsFields()
+                                        layerFields.append(QgsField('AA',QVariant.String,'string',50.0))
+                                        # #iface.messageBar().pushMessage("Debug: ","{}".format(layerFields),level=Qgis.Info)
+                                        # for at in list_contaminats:
+                                        
+                                        #     layerFields.append(QgsField(at,QVariant.String))
+                                        # #QgsMessageLog.logMessage("{}".format(layerFields.names()), 'ADREMTOOL', level=Qgis.Info)
+                                        # #iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
+
+                                        # ########### there is a bug here that shorten the fields names, I dont know how to solve it
+                                        # field_names = layerFields.names()
+                                        ###########################################################
+                                        writer = QgsVectorFileWriter.create(
+                                                    out_file,
+                                                    layerFields,
+                                                    QgsWkbTypes.Point,
+                                                    crs,
+                                                    transform_context,
+                                                    save_options
+
+                                                )
+                                                
+                                        if writer.hasError() != QgsVectorFileWriter.NoError:
+                                            msg = 'writting no geometry AA on shallow on res : {}'.format(writer.errorMessage())
+                                            iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
+                                            raise Exception(msg)
+                                
+                                        
+
+                                        for tech in tmp_tech[cont_name]:
+                                            fet = QgsFeature()
+                                            fet.setAttributes([tech])
+                                            writer.addFeature(fet)
+
+                                                
+
+                                        del writer
+                                        out_sha_pol_ind = QgsVectorLayer(out_file, 'shallow_polluted_on_res_' + cont_name+ '_AA', 'ogr')
+                                        if out_sha_pol_ind.isValid():
+                                            QgsProject.instance().addMapLayer(out_sha_pol_ind, False)
+                                            group_to_be_remediate.addLayer(out_sha_pol_ind)
 
                     
 
@@ -1582,6 +1746,9 @@ class ADREMTool:
                     #iface.messageBar().pushMessage("Debug: ","{}".format(layerFields),level=Qgis.Info)
                     for at in list_contaminats:
                         layerFields.append(QgsField(at, QVariant.String))
+
+                    field_names = layerFields.names()
+
                     #iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
                     writer = QgsVectorFileWriter.create(
                                 out_file,
@@ -1642,6 +1809,7 @@ class ADREMTool:
 
                     #### select polygons
                     dialog_deep_res = SelectSourceDialog()
+                    dialog_deep_res.setWindowTitle("Deep soil : Res")
                     dialog_deep_res.listView.setSelectionMode(2)
                     model = QStandardItemModel()
                     for each_item in list_sources:
@@ -1687,6 +1855,81 @@ class ADREMTool:
                                     set_fill_color(cloned_)
                                     QgsProject.instance().addMapLayer(cloned_, False)
                                     group_to_be_remediate.addLayer(cloned_)
+
+                                    #############################################################################################
+
+                                    # tmp_sha_toberemediate_ind = QgsVectorLayer(fi_, 'tmp_sha_toberemediate_ind', 'ogr')
+
+                                    # tmp_attr = []
+                                    # for feat in tmp_sha_toberemediate_ind.fields():
+                                    #     if feat.name() != 'source':
+                                    #         tmp_attr.append(feat.name())
+                                    #QgsMessageLog.logMessage("{}".format(tmp_attr), 'ADREMTOOL', level=Qgis.Info)
+                                    
+                                    tmp_tech = dict()
+                                    for nm in field_names:
+                                        if nm != 'source':
+                                            gp_name = self.gpname.getGroupeName(nm)
+                                            techlsit = self.matrixtech.getTechAASoil(gp_name)
+                                            tmp_tech[nm] = techlsit
+                                    #QgsMessageLog.logMessage("{}".format(tmp_tech), 'ADREMTOOL', level=Qgis.Info)
+
+                                    ###############################################################
+                                    ######################## MATRIx ###############################
+                                    ###############################################################
+
+                                    for cont_name in tmp_tech:
+                                        out_file = os.path.join(self.dlg.outputDir.text(),'deep_soil_polluted_on_res_' + cont_name+ '_AA.shp')
+                                    
+                                        # crs = QgsProject.instance().crs()
+                                        # # iface.messageBar().pushMessage("Debug: ","{}".format(crs),level=Qgis.Info)
+                                        # transform_context = QgsProject.instance().transformContext()
+                                        # # iface.messageBar().pushMessage("Debug: ","{}".format(transform_context),level=Qgis.Info)
+                                        # save_options = QgsVectorFileWriter.SaveVectorOptions()
+                                        # save_options.driverName = "ESRI Shapefile"
+                                        # save_options.fileEncoding = "UTF-8"
+
+                                        layerFields = QgsFields()
+                                        layerFields.append(QgsField('AA',QVariant.String,'string',50.0))
+                                        # #iface.messageBar().pushMessage("Debug: ","{}".format(layerFields),level=Qgis.Info)
+                                        # for at in list_contaminats:
+                                        
+                                        #     layerFields.append(QgsField(at,QVariant.String))
+                                        # #QgsMessageLog.logMessage("{}".format(layerFields.names()), 'ADREMTOOL', level=Qgis.Info)
+                                        # #iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
+
+                                        # ########### there is a bug here that shorten the fields names, I dont know how to solve it
+                                        # field_names = layerFields.names()
+                                        ###########################################################
+                                        writer = QgsVectorFileWriter.create(
+                                                    out_file,
+                                                    layerFields,
+                                                    QgsWkbTypes.Point,
+                                                    crs,
+                                                    transform_context,
+                                                    save_options
+
+                                                )
+                                                
+                                        if writer.hasError() != QgsVectorFileWriter.NoError:
+                                            msg = 'writting no geometry AA deep on res : {}'.format(writer.errorMessage())
+                                            iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
+                                            raise Exception(msg)
+                                
+                                        
+
+                                        for tech in tmp_tech[cont_name]:
+                                            fet = QgsFeature()
+                                            fet.setAttributes([tech])
+                                            writer.addFeature(fet)
+
+                                                
+
+                                        del writer
+                                        out_sha_pol_ind = QgsVectorLayer(out_file, 'deep_soil_polluted_on_res_' + cont_name+ '_AA', 'ogr')
+                                        if out_sha_pol_ind.isValid():
+                                            QgsProject.instance().addMapLayer(out_sha_pol_ind, False)
+                                            group_to_be_remediate.addLayer(out_sha_pol_ind)
 
 
         except AttributeError:
@@ -1744,6 +1987,8 @@ class ADREMTool:
                     #iface.messageBar().pushMessage("Debug: ","{}".format(layerFields),level=Qgis.Info)
                     for at in list_contaminats:
                         layerFields.append(QgsField(at, QVariant.String))
+
+                    field_names = layerFields.names()
                     #iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
                     writer = QgsVectorFileWriter.create(
                                 out_file,
@@ -1804,6 +2049,7 @@ class ADREMTool:
 
                     #### select polygons
                     dialog_deep_ind = SelectSourceDialog()
+                    dialog_deep_ind.setWindowTitle("Deep soil : Ind")
                     dialog_deep_ind.listView.setSelectionMode(2)
                     model = QStandardItemModel()
                     for each_item in list_sources:
@@ -1849,6 +2095,83 @@ class ADREMTool:
                                     set_fill_color(cloned_)
                                     QgsProject.instance().addMapLayer(cloned_, False)
                                     group_to_be_remediate.addLayer(cloned_)
+
+                                    #############################################################################################
+
+                                    # tmp_sha_toberemediate_ind = QgsVectorLayer(fi_, 'tmp_sha_toberemediate_ind', 'ogr')
+
+                                    # tmp_attr = []
+                                    # for feat in tmp_sha_toberemediate_ind.fields():
+                                    #     if feat.name() != 'source':
+                                    #         tmp_attr.append(feat.name())
+                                    #QgsMessageLog.logMessage("{}".format(tmp_attr), 'ADREMTOOL', level=Qgis.Info)
+                                    
+                                    tmp_tech = dict()
+                                    for nm in field_names:
+                                        if nm != 'source':
+                                            gp_name = self.gpname.getGroupeName(nm)
+                                            techlsit = self.matrixtech.getTechAASoil(gp_name)
+                                            tmp_tech[nm] = techlsit
+                                    #QgsMessageLog.logMessage("{}".format(tmp_tech), 'ADREMTOOL', level=Qgis.Info)
+
+                                    ###############################################################
+                                    ######################## MATRIx ###############################
+                                    ###############################################################
+
+                                    for cont_name in tmp_tech:
+                                        out_file = os.path.join(self.dlg.outputDir.text(),'deep_soil_polluted_on_ind_' + cont_name+ '_AA.shp')
+                                    
+                                        # crs = QgsProject.instance().crs()
+                                        # # iface.messageBar().pushMessage("Debug: ","{}".format(crs),level=Qgis.Info)
+                                        # transform_context = QgsProject.instance().transformContext()
+                                        # # iface.messageBar().pushMessage("Debug: ","{}".format(transform_context),level=Qgis.Info)
+                                        # save_options = QgsVectorFileWriter.SaveVectorOptions()
+                                        # save_options.driverName = "ESRI Shapefile"
+                                        # save_options.fileEncoding = "UTF-8"
+
+                                        layerFields = QgsFields()
+                                        layerFields.append(QgsField('AA',QVariant.String,'string',50.0))
+                                        # #iface.messageBar().pushMessage("Debug: ","{}".format(layerFields),level=Qgis.Info)
+                                        # for at in list_contaminats:
+                                        
+                                        #     layerFields.append(QgsField(at,QVariant.String))
+                                        # #QgsMessageLog.logMessage("{}".format(layerFields.names()), 'ADREMTOOL', level=Qgis.Info)
+                                        # #iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
+
+                                        # ########### there is a bug here that shorten the fields names, I dont know how to solve it
+                                        # field_names = layerFields.names()
+                                        ###########################################################
+                                        writer = QgsVectorFileWriter.create(
+                                                    out_file,
+                                                    layerFields,
+                                                    QgsWkbTypes.Point,
+                                                    crs,
+                                                    transform_context,
+                                                    save_options
+
+                                                )
+                                                
+                                        if writer.hasError() != QgsVectorFileWriter.NoError:
+                                            msg = 'writting no geometry AA deep soil on ind : {}'.format(writer.errorMessage())
+                                            iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
+                                            raise Exception(msg)
+                                
+                                        
+
+                                        for tech in tmp_tech[cont_name]:
+                                            fet = QgsFeature()
+                                            fet.setAttributes([tech])
+                                            writer.addFeature(fet)
+
+                                                
+
+                                        del writer
+                                        out_sha_pol_ind = QgsVectorLayer(out_file, 'deep_soil_polluted_on_ind_' + cont_name+ '_AA', 'ogr')
+                                        if out_sha_pol_ind.isValid():
+                                            QgsProject.instance().addMapLayer(out_sha_pol_ind, False)
+                                            group_to_be_remediate.addLayer(out_sha_pol_ind)
+
+
 
         except AttributeError:
             pass
@@ -1905,6 +2228,8 @@ class ADREMTool:
                     #iface.messageBar().pushMessage("Debug: ","{}".format(layerFields),level=Qgis.Info)
                     for at in list_contaminats:
                         layerFields.append(QgsField(at, QVariant.String))
+
+                    field_names = layerFields.names()
                     #iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
                     writer = QgsVectorFileWriter.create(
                                 out_file,
@@ -1916,7 +2241,7 @@ class ADREMTool:
                             )
                             
                     if writer.hasError() != QgsVectorFileWriter.NoError:
-                        msg = 'writting output for sha_ind : {}'.format(writer.errorMessage())
+                        msg = 'writting output for aquifer : {}'.format(writer.errorMessage())
                         iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
                         raise Exception(msg)
             
@@ -1957,7 +2282,7 @@ class ADREMTool:
 
                     del writer
 
-                    QgsMessageLog.logMessage(" we are here", 'ADREMTOOL', level=Qgis.Info)
+                    #QgsMessageLog.logMessage(" we are here", 'ADREMTOOL', level=Qgis.Info)
                     out_aquifer_pol = QgsVectorLayer(out_file, 'aquifer_polluted', 'ogr')
                     if out_aquifer_pol.isValid():
                         set_fill_color(out_aquifer_pol)
@@ -1966,6 +2291,8 @@ class ADREMTool:
 
                     #### select polygons
                     dialog_aquifer = SelectSourceDialog()
+                    # dialog_aquifer.title.setText("Aquifer")
+                    dialog_aquifer.setWindowTitle("Aquifer")
                     dialog_aquifer.listView.setSelectionMode(2)
                     
                     model = QStandardItemModel()
@@ -2012,6 +2339,82 @@ class ADREMTool:
                                     set_fill_color(cloned_)
                                     QgsProject.instance().addMapLayer(cloned_, False)
                                     group_to_be_remediate.addLayer(cloned_)
+
+                                    #############################################################################################
+
+                                    # tmp_sha_toberemediate_ind = QgsVectorLayer(fi_, 'tmp_sha_toberemediate_ind', 'ogr')
+
+                                    # tmp_attr = []
+                                    # for feat in tmp_sha_toberemediate_ind.fields():
+                                    #     if feat.name() != 'source':
+                                    #         tmp_attr.append(feat.name())
+                                    #QgsMessageLog.logMessage("{}".format(tmp_attr), 'ADREMTOOL', level=Qgis.Info)
+                                    
+                                    tmp_tech = dict()
+                                    for nm in field_names:
+                                        if nm != 'source':
+                                            gp_name = self.gpname.getGroupeName(nm)
+                                            techlsit = self.matrixtech.getTechAAGroudwater(gp_name)
+                                            tmp_tech[nm] = techlsit
+                                    #QgsMessageLog.logMessage("{}".format(tmp_tech), 'ADREMTOOL', level=Qgis.Info)
+
+                                    ###############################################################
+                                    ######################## MATRIx ###############################
+                                    ###############################################################
+
+                                    for cont_name in tmp_tech:
+                                        out_file = os.path.join(self.dlg.outputDir.text(),'aquifer_polluted_' + cont_name+ '_AA.shp')
+                                    
+                                        # crs = QgsProject.instance().crs()
+                                        # # iface.messageBar().pushMessage("Debug: ","{}".format(crs),level=Qgis.Info)
+                                        # transform_context = QgsProject.instance().transformContext()
+                                        # # iface.messageBar().pushMessage("Debug: ","{}".format(transform_context),level=Qgis.Info)
+                                        # save_options = QgsVectorFileWriter.SaveVectorOptions()
+                                        # save_options.driverName = "ESRI Shapefile"
+                                        # save_options.fileEncoding = "UTF-8"
+
+                                        layerFields = QgsFields()
+                                        layerFields.append(QgsField('AA',QVariant.String,'string',50.0))
+                                        # #iface.messageBar().pushMessage("Debug: ","{}".format(layerFields),level=Qgis.Info)
+                                        # for at in list_contaminats:
+                                        
+                                        #     layerFields.append(QgsField(at,QVariant.String))
+                                        # #QgsMessageLog.logMessage("{}".format(layerFields.names()), 'ADREMTOOL', level=Qgis.Info)
+                                        # #iface.messageBar().pushMessage("Debug: ","{}".format(out_file),level=Qgis.Info)
+
+                                        # ########### there is a bug here that shorten the fields names, I dont know how to solve it
+                                        # field_names = layerFields.names()
+                                        ###########################################################
+                                        writer = QgsVectorFileWriter.create(
+                                                    out_file,
+                                                    layerFields,
+                                                    QgsWkbTypes.Point,
+                                                    crs,
+                                                    transform_context,
+                                                    save_options
+
+                                                )
+                                                
+                                        if writer.hasError() != QgsVectorFileWriter.NoError:
+                                            msg = 'writting no geometry AA aquifer : {}'.format(writer.errorMessage())
+                                            iface.messageBar().pushMessage("ERROR", msg, level=Qgis.Critical)
+                                            raise Exception(msg)
+                                
+                                        
+
+                                        for tech in tmp_tech[cont_name]:
+                                            fet = QgsFeature()
+                                            fet.setAttributes([tech])
+                                            writer.addFeature(fet)
+
+                                                
+
+                                        del writer
+                                        out_sha_pol_ind = QgsVectorLayer(out_file, 'aquifer_polluted_' + cont_name+ '_AA', 'ogr')
+                                        if out_sha_pol_ind.isValid():
+                                            QgsProject.instance().addMapLayer(out_sha_pol_ind, False)
+                                            group_to_be_remediate.addLayer(out_sha_pol_ind)
+
 
         except AttributeError:
             pass

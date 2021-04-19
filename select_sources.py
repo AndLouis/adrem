@@ -10,3 +10,4 @@ class SelectSourceDialog(QtWidgets.QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         super(SelectSourceDialog, self).__init__(parent)
         self.setupUi(self)
+

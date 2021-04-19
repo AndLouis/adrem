@@ -1,0 +1,632 @@
+{
+  "soil": {
+    "Nonhalogenated VOC’s": {
+      "AA": [
+        "Bioventing",
+        "Enhanced Bioremediation",
+        "Soil Flushing",
+        "Soil Vapor Extraction",
+        "Thermal Treatment",
+        "Biopiles",
+        "Incineration",
+        "Thermal Desorption"
+      ],
+      "A": [
+        "Phytoremediation",
+        "Chemical Oxidation",
+        "Electrokinetic Separation",
+        "Fracturing",
+        "Composting",
+        "Landfarming",
+        "Slurry Phase Biological Treatment",
+        "Chemical Extraction",
+        "Chemical Reduction /Oxidation",
+        "Separation",
+        "Soil Washing",
+        "Pyrolysis",
+        "Landfill Cap",
+        "Landfill Cap Enhancements/Alternatives",
+        "Excavation, Retrieval, Off-Site Disposal"
+      ],
+      "BA": [
+        "Solidification/Stabilization",
+        "Dehalogenation",
+        "Solidification/Stabilization",
+        "Hot Gas Decontamination",
+        "Open Burn/Open Detonation"
+      ]
+    },
+    "Halogenated VOC’s": {
+      "SPA": [
+        "Bioventing"
+      ],
+      "AA": [
+        "Enhanced Bioremediation",
+        "Soil Flushing",
+        "Soil Vapor Extraction",
+        "Thermal Treatment",
+        "Biopiles",
+        "Slurry Phase Biological Treatment",
+        "Dehalogenation",
+        "Incineration",
+        "Thermal Desorption"
+      ],
+      "A": [
+        "Phytoremediation",
+        "Chemical Oxidation",
+        "Electrokinetic Separation",
+        "Fracturing",
+        "Composting",
+        "Landfarming",
+        "Chemical Extraction",
+        "Chemical Reduction /Oxidation",
+        "Separation",
+        "Soil Washing",
+        "Pyrolysis",
+        "Landfill Cap",
+        "Landfill Cap Enhancements/Alternatives",
+        "Excavation, Retrieval, Off-Site Disposal"
+      ],
+      "BA": [
+        "Solidification/Stabilization",
+        "Solidification/Stabilization",
+        "Hot Gas Decontamination",
+        "Open Burn/Open Detonation"
+      ]
+    },
+    "Nonhalogenated SVOC’s": {
+      "AA": [
+        "Bioventing",
+        "Enhanced Bioremediation",
+        "Thermal Treatment",
+        "Landfarming",
+        "Slurry Phase Biological Treatment",
+        "Chemical Extraction",
+        "Incineration",
+        "Pyrolysis",
+        "Thermal Desorption"
+      ],
+      "A": [
+        "Phytoremediation",
+        "Electrokinetic Separation",
+        "Fracturing",
+        "Soil Flushing",
+        "Solidification/Stabilization",
+        "Biopiles",
+        "Composting",
+        "Chemical Reduction /Oxidation",
+        "Separation",
+        "Soil Washing",
+        "Solidification/Stabilization",
+        "Landfill Cap",
+        "Landfill Cap Enhancements/Alternatives",
+        "Excavation, Retrieval, Off-Site Disposal"
+      ],
+      "BA": [
+        "Chemical Oxidation",
+        "Soil Vapor Extraction",
+        "Dehalogenation",
+        "Hot Gas Decontamination",
+        "Open Burn/Open Detonation"
+      ]
+    },
+    "Halogenated SVOC’s": {
+      "BA": [
+        "Bioventing",
+        "Soil Vapor Extraction",
+        "Hot Gas Decontamination",
+        "Open Burn/Open Detonation"
+      ],
+      "SPA": [
+        "Enhanced Bioremediation",
+        "Phytoremediation",
+        "Biopiles",
+        "Composting",
+        "Slurry Phase Biological Treatment"
+      ],
+      "A": [
+        "Chemical Oxidation",
+        "Electrokinetic Separation",
+        "Fracturing",
+        "Soil Flushing",
+        "Solidification/Stabilization",
+        "Landfarming",
+        "Chemical Reduction /Oxidation",
+        "Separation",
+        "Soil Washing",
+        "Solidification/Stabilization",
+        "Landfill Cap",
+        "Landfill Cap Enhancements/Alternatives",
+        "Excavation, Retrieval, Off-Site Disposal"
+      ],
+      "AA": [
+        "Thermal Treatment",
+        "Chemical Extraction",
+        "Dehalogenation",
+        "Incineration",
+        "Pyrolysis",
+        "Thermal Desorption"
+      ]
+    },
+    "Fuels": {
+      "AA": [
+        "Bioventing",
+        "Enhanced Bioremediation",
+        "Soil Vapor Extraction",
+        "Thermal Treatment",
+        "Biopiles",
+        "Composting",
+        "Landfarming",
+        "Slurry Phase Biological Treatment",
+        "Incineration",
+        "Thermal Desorption"
+      ],
+      "A": [
+        "Phytoremediation",
+        "Fracturing",
+        "Soil Flushing",
+        "Chemical Extraction",
+        "Chemical Reduction /Oxidation",
+        "Soil Washing",
+        "Pyrolysis",
+        "Landfill Cap",
+        "Landfill Cap Enhancements/Alternatives",
+        "Excavation, Retrieval, Off-Site Disposal"
+      ],
+      "BA": [
+        "Chemical Oxidation",
+        "Electrokinetic Separation",
+        "Solidification/Stabilization",
+        "Dehalogenation",
+        "Separation",
+        "Solidification/Stabilization",
+        "Hot Gas Decontamination",
+        "Open Burn/Open Detonation"
+      ]
+    },
+    "Inorganics": {
+      "BA": [
+        "Bioventing",
+        "Fracturing",
+        "Soil Vapor Extraction",
+        "Thermal Treatment",
+        "Composting",
+        "Landfarming",
+        "Dehalogenation",
+        "Hot Gas Decontamination",
+        "Incineration",
+        "Open Burn/Open Detonation",
+        "Pyrolysis",
+        "Thermal Desorption"
+      ],
+      "SPA": [
+        "Enhanced Bioremediation",
+        "Chemical Oxidation",
+        "Biopiles",
+        "Slurry Phase Biological Treatment"
+      ],
+      "A": [
+        "Phytoremediation",
+        "Separation",
+        "Soil Washing",
+        "Landfill Cap",
+        "Landfill Cap Enhancements/Alternatives",
+        "Excavation, Retrieval, Off-Site Disposal"
+      ],
+      "AA": [
+        "Electrokinetic Separation",
+        "Soil Flushing",
+        "Solidification/Stabilization",
+        "Chemical Extraction",
+        "Chemical Reduction /Oxidation",
+        "Solidification/Stabilization"
+      ]
+    },
+    "Radionuclides": {
+      "SPA": [
+        "Bioventing",
+        "Enhanced Bioremediation"
+      ],
+      "BA": [
+        "Phytoremediation",
+        "Chemical Oxidation",
+        "Fracturing",
+        "Soil Flushing",
+        "Soil Vapor Extraction",
+        "Thermal Treatment",
+        "Biopiles",
+        "Composting",
+        "Landfarming",
+        "Slurry Phase Biological Treatment",
+        "Chemical Reduction /Oxidation",
+        "Dehalogenation",
+        "Separation",
+        "Soil Washing",
+        "Hot Gas Decontamination",
+        "Incineration",
+        "Open Burn/Open Detonation",
+        "Pyrolysis",
+        "Thermal Desorption",
+        "Landfill Cap",
+        "Landfill Cap Enhancements/Alternatives",
+        "Excavation, Retrieval, Off-Site Disposal"
+      ],
+      "A": [
+        "Electrokinetic Separation",
+        "Chemical Extraction"
+      ],
+      "AA": [
+        "Solidification/Stabilization",
+        "Solidification/Stabilization"
+      ]
+    },
+    "Explosives": {
+      "BA": [
+        "Bioventing",
+        "Phytoremediation",
+        "Electrokinetic Separation",
+        "Fracturing",
+        "Soil Flushing",
+        "Soil Vapor Extraction",
+        "Solidification/Stabilization",
+        "Thermal Treatment",
+        "Biopiles",
+        "Chemical Extraction",
+        "Separation",
+        "Soil Washing",
+        "Solidification/Stabilization",
+        "Hot Gas Decontamination",
+        "Pyrolysis"
+      ],
+      "AA": [
+        "Enhanced Bioremediation",
+        "Composting",
+        "Slurry Phase Biological Treatment",
+        "Incineration",
+        "Open Burn/Open Detonation",
+        "Thermal Desorption"
+      ],
+      "A": [
+        "Chemical Oxidation",
+        "Chemical Reduction /Oxidation",
+        "Dehalogenation",
+        "Landfill Cap",
+        "Landfill Cap Enhancements/Alternatives",
+        "Excavation, Retrieval, Off-Site Disposal"
+      ],
+      "SPA": [
+        "Landfarming"
+      ]
+    }
+  },
+  "groundwater": {
+    "Nonhalogenated VOC’s": {
+      "AA": [
+        "Enhanced Bioremediation",
+        "Monitored Natural Attenuation",
+        "Air Sparging",
+        "Dual Phase Extraction",
+        "Passive/Reactive Treatment Walls",
+        "Bioreactors",
+        "Advanced Oxidation Processes",
+        "Air Stripping",
+        "Granulated Activated Carbon/Liquid Phase Carbon Adsorption",
+        "Separation",
+        "Sprinkler Irrigation",
+        "Physical Barriers",
+        "Biofiltration",
+        "High Energy Destruction",
+        "Membrane Separation",
+        "Oxidation",
+        "Vapor Phase Carbon Adsorption"
+      ],
+      "A": [
+        "Phytoremediation",
+        "Bioslurping",
+        "Chemical Oxidation",
+        "Directional Wells (enhancement)",
+        "Thermal Treatment",
+        "Hydrofracturing Enhancements",
+        "In-Well Air Stripping",
+        "Constructed Wetlands",
+        "Adsorption/ Absorption",
+        "Groundwater Pumping/Pump & Treat",
+        "Deep Well Injection"
+      ],
+      "BA": [
+        "Ion Exchange",
+        "Precipitation/Coagulation/Flocculation",
+        "Scrubbers"
+      ]
+    },
+    "Halogenated VOC’s": {
+      "SPA": [
+        "Enhanced Bioremediation",
+        "Biofiltration"
+      ],
+      "A": [
+        "Monitored Natural Attenuation",
+        "Phytoremediation",
+        "Air Sparging",
+        "Bioslurping",
+        "Chemical Oxidation",
+        "Directional Wells (enhancement)",
+        "Hydrofracturing Enhancements",
+        "In-Well Air Stripping",
+        "Constructed Wetlands",
+        "Adsorption/ Absorption",
+        "Groundwater Pumping/Pump & Treat",
+        "Deep Well Injection"
+      ],
+      "AA": [
+        "Dual Phase Extraction",
+        "Thermal Treatment",
+        "Passive/Reactive Treatment Walls",
+        "Bioreactors",
+        "Advanced Oxidation Processes",
+        "Air Stripping",
+        "Granulated Activated Carbon/Liquid Phase Carbon Adsorption",
+        "Separation",
+        "Sprinkler Irrigation",
+        "Physical Barriers",
+        "High Energy Destruction",
+        "Membrane Separation",
+        "Oxidation",
+        "Vapor Phase Carbon Adsorption"
+      ],
+      "BA": [
+        "Ion Exchange",
+        "Precipitation/Coagulation/Flocculation",
+        "Scrubbers"
+      ]
+    },
+    "Nonhalogenated SVOC’s": {
+      "AA": [
+        "Enhanced Bioremediation",
+        "Bioslurping",
+        "Dual Phase Extraction",
+        "Thermal Treatment",
+        "Passive/Reactive Treatment Walls",
+        "Bioreactors",
+        "Advanced Oxidation Processes",
+        "Granulated Activated Carbon/Liquid Phase Carbon Adsorption",
+        "Separation",
+        "Physical Barriers",
+        "High Energy Destruction",
+        "Oxidation",
+        "Vapor Phase Carbon Adsorption"
+      ],
+      "A": [
+        "Monitored Natural Attenuation",
+        "Phytoremediation",
+        "Air Sparging",
+        "Directional Wells (enhancement)",
+        "Hydrofracturing Enhancements",
+        "In-Well Air Stripping",
+        "Constructed Wetlands",
+        "Adsorption/ Absorption",
+        "Groundwater Pumping/Pump & Treat",
+        "Deep Well Injection",
+        "Membrane Separation"
+      ],
+      "BA": [
+        "Chemical Oxidation",
+        "Air Stripping",
+        "Ion Exchange",
+        "Precipitation/Coagulation/Flocculation",
+        "Sprinkler Irrigation",
+        "Scrubbers"
+      ],
+      "SPA": [
+        "Biofiltration"
+      ]
+    },
+    "Halogenated SVOC’s": {
+      "SPA": [
+        "Enhanced Bioremediation",
+        "Bioreactors",
+        "Constructed Wetlands",
+        "Groundwater Pumping/Pump & Treat",
+        "Biofiltration"
+      ],
+      "A": [
+        "Monitored Natural Attenuation",
+        "Phytoremediation",
+        "Air Sparging",
+        "Chemical Oxidation",
+        "Directional Wells (enhancement)",
+        "Hydrofracturing Enhancements",
+        "Adsorption/ Absorption",
+        "Deep Well Injection",
+        "Membrane Separation"
+      ],
+      "AA": [
+        "Bioslurping",
+        "Dual Phase Extraction",
+        "Thermal Treatment",
+        "Passive/Reactive Treatment Walls",
+        "Advanced Oxidation Processes",
+        "Granulated Activated Carbon/Liquid Phase Carbon Adsorption",
+        "Separation",
+        "Physical Barriers",
+        "High Energy Destruction",
+        "Oxidation",
+        "Vapor Phase Carbon Adsorption"
+      ],
+      "BA": [
+        "In-Well Air Stripping",
+        "Air Stripping",
+        "Ion Exchange",
+        "Precipitation/Coagulation/Flocculation",
+        "Sprinkler Irrigation",
+        "Scrubbers"
+      ]
+    },
+    "Fuels": {
+      "AA": [
+        "Enhanced Bioremediation",
+        "Monitored Natural Attenuation",
+        "Air Sparging",
+        "Bioslurping",
+        "Dual Phase Extraction",
+        "Thermal Treatment",
+        "Bioreactors",
+        "Advanced Oxidation Processes",
+        "Granulated Activated Carbon/Liquid Phase Carbon Adsorption",
+        "Separation",
+        "Physical Barriers",
+        "Biofiltration",
+        "High Energy Destruction",
+        "Oxidation",
+        "Vapor Phase Carbon Adsorption"
+      ],
+      "A": [
+        "Phytoremediation",
+        "Directional Wells (enhancement)",
+        "Hydrofracturing Enhancements",
+        "In-Well Air Stripping",
+        "Passive/Reactive Treatment Walls",
+        "Constructed Wetlands",
+        "Groundwater Pumping/Pump & Treat",
+        "Deep Well Injection",
+        "Membrane Separation"
+      ],
+      "BA": [
+        "Chemical Oxidation",
+        "Adsorption/ Absorption",
+        "Air Stripping",
+        "Ion Exchange",
+        "Precipitation/Coagulation/Flocculation",
+        "Sprinkler Irrigation",
+        "Scrubbers"
+      ]
+    },
+    "Inorganics": {
+      "SPA": [
+        "Enhanced Bioremediation",
+        "Phytoremediation",
+        "Chemical Oxidation",
+        "Passive/Reactive Treatment Walls",
+        "Advanced Oxidation Processes",
+        "Granulated Activated Carbon/Liquid Phase Carbon Adsorption",
+        "Separation"
+      ],
+      "BA": [
+        "Monitored Natural Attenuation",
+        "Air Sparging",
+        "Dual Phase Extraction",
+        "Thermal Treatment",
+        "In-Well Air Stripping",
+        "Bioreactors",
+        "Air Stripping",
+        "Sprinkler Irrigation",
+        "Biofiltration",
+        "Membrane Separation",
+        "Oxidation"
+      ],
+      "A": [
+        "Bioslurping",
+        "Directional Wells (enhancement)",
+        "Hydrofracturing Enhancements",
+        "Groundwater Pumping/Pump & Treat",
+        "Deep Well Injection",
+        "High Energy Destruction",
+        "Vapor Phase Carbon Adsorption"
+      ],
+      "AA": [
+        "Constructed Wetlands",
+        "Adsorption/ Absorption",
+        "Ion Exchange",
+        "Precipitation/Coagulation/Flocculation",
+        "Physical Barriers",
+        "Scrubbers"
+      ]
+    },
+    "Radionuclides": {
+      "BA": [
+        "Enhanced Bioremediation",
+        "Monitored Natural Attenuation",
+        "Phytoremediation",
+        "Air Sparging",
+        "Bioslurping",
+        "Chemical Oxidation",
+        "Directional Wells (enhancement)",
+        "Dual Phase Extraction",
+        "Thermal Treatment",
+        "Hydrofracturing Enhancements",
+        "In-Well Air Stripping",
+        "Passive/Reactive Treatment Walls",
+        "Bioreactors",
+        "Constructed Wetlands",
+        "Air Stripping",
+        "Granulated Activated Carbon/Liquid Phase Carbon Adsorption",
+        "Groundwater Pumping/Pump & Treat",
+        "Sprinkler Irrigation"
+      ],
+      "SPA": [
+        "Adsorption/ Absorption",
+        "Advanced Oxidation Processes",
+        "Separation"
+      ],
+      "A": [
+        "Ion Exchange",
+        "Precipitation/Coagulation/Flocculation",
+        "Deep Well Injection"
+      ],
+      "NaN": [
+        "Physical Barriers"
+      ],
+      "I/D": [
+        "Biofiltration",
+        "High Energy Destruction",
+        "Membrane Separation",
+        "Oxidation",
+        "Scrubbers",
+        "Vapor Phase Carbon Adsorption"
+      ]
+    },
+    "Explosives": {
+      "A": [
+        "Enhanced Bioremediation",
+        "Chemical Oxidation",
+        "Directional Wells (enhancement)",
+        "Hydrofracturing Enhancements",
+        "Groundwater Pumping/Pump & Treat",
+        "Deep Well Injection",
+        "Membrane Separation",
+        "Oxidation"
+      ],
+      "BA": [
+        "Monitored Natural Attenuation",
+        "Phytoremediation",
+        "Air Sparging",
+        "Bioslurping",
+        "Dual Phase Extraction",
+        "Thermal Treatment",
+        "In-Well Air Stripping",
+        "Adsorption/ Absorption",
+        "Air Stripping",
+        "Ion Exchange",
+        "Precipitation/Coagulation/Flocculation",
+        "Separation",
+        "Sprinkler Irrigation",
+        "High Energy Destruction"
+      ],
+      "AA": [
+        "Passive/Reactive Treatment Walls",
+        "Bioreactors",
+        "Constructed Wetlands",
+        "Advanced Oxidation Processes",
+        "Physical Barriers",
+        "Vapor Phase Carbon Adsorption"
+      ],
+      "SPA": [
+        "Granulated Activated Carbon/Liquid Phase Carbon Adsorption",
+        "Biofiltration"
+      ],
+      "I/D": [
+        "Scrubbers"
+      ]
+    }
+  }
+}
